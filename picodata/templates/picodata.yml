@@ -1,37 +1,37 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: {{ include "picodata.fullname" . }}-storage
+  name: {{ include "picodata.fullname" . }}
   namespace: {{ .Release.Namespace | default "default" }}
   labels:
-    app.kubernetes.io/name: {{ include "picodata.fullname" . }}-storage
+    app.kubernetes.io/name: {{ include "picodata.fullname" . }}
     app.kubernetes.io/cluster: {{ .Release.Name }}
     app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
 spec:
-  {{- if not .Values.storage.autoscaling.enabled }}
-  replicas: {{ .Values.storage.replicas }}
+  {{- if not .Values.picodata.autoscaling.enabled }}
+  replicas: {{ .Values.picodata.replicas }}
   {{- end }}
   selector:
     matchLabels:
-      app.kubernetes.io/name: {{ include "picodata.fullname" . }}-storage
-  serviceName: {{ include "picodata.fullname" . }}-storage-interconnect
+      app.kubernetes.io/name: {{ include "picodata.fullname" . }}
+  serviceName: {{ include "picodata.fullname" . }}-interconnect
   template:
     metadata:
-      {{- with .Values.storage.podAnnotations }}
+      {{- with .Values.picodata.podAnnotations }}
       annotations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        app.kubernetes.io/name: {{ include "picodata.fullname" . }}-storage
+        app.kubernetes.io/name: {{ include "picodata.fullname" . }}
     spec:
-      {{- with .Values.storage.securityContext }}
+      {{- with .Values.picodata.securityContext }}
       securityContext:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       serviceAccountName: {{ include "picodata.serviceAccountName" . }}
       containers:
-        - name: {{ include "picodata.fullname" . }}-storage
+        - name: {{ include "picodata.fullname" . }}
           image: {{ .Values.image.repository }}/{{ .Values.image.tag }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           {{- with .Values.imagePullSecrets }}
@@ -39,7 +39,7 @@ spec:
             {{- toYaml . | nindent 8 }}
           {{- end }}
           ports:
-            {{- range $i, $value := .Values.storage.service.ports }}
+            {{- range $i, $value := .Values.picodata.service.ports }}
             - name: {{ $value.name }}
               containerPort: {{ $value.targetPort }}
               protocol: {{ $value.protocol }}
@@ -50,7 +50,7 @@ spec:
                 fieldRef:
                   fieldPath: status.podIP
             - name: POD_PORT
-              value: {{ include "picodata.storage.binaryTargetPort" . | quote }}
+              value: {{ include "picodata.binaryTargetPort" . | quote }}
             - name: INSTANCE_NAME
               valueFrom:
                 fieldRef:
@@ -60,34 +60,36 @@ spec:
                 fieldRef:
                   fieldPath: metadata.namespace
             - name: INSTANCE_ROLE
-              value: {{ .Values.storage.role }}
+              value: {{ .Values.picodata.role }}
             - name: INSTANCE_GROUP
-              value: {{ .Values.storage.group }}
+              value: {{ .Values.picodata.group }}
             - name: PEER_URI
               value: {{ include "picodata.peerUri" . }}
             - name: ADVERTISE_URI
-              value: {{ include "picodata.storage.advertiseUri" . }}
+              value: {{ include "picodata.advertiseUri" . }}
             - name: PICODATA_DATA_DIR
-              value: {{ .Values.storage.dataDir }}
-            {{- range .Values.storage.env }}
+              value: {{ .Values.picodata.dataDir }}
+            - name: PICODATA_HTTP_LISTEN
+              value: $(POD_IP):{{ include "picodata.httpTargetPort" . }}              
+            {{- range .Values.picodata.env }}
             - name: {{ .name }}
               value: {{ .value }}
             {{- end }}
-          {{- with .Values.storage.livenessProbe }}
+          {{- with .Values.picodata.livenessProbe }}
           livenessProbe:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          {{- with .Values.storage.readinessProbe }}
+          {{- with .Values.picodata.readinessProbe }}
           readinessProbe:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          {{- with .Values.storage.resources }}
+          {{- with .Values.picodata.resources }}
           resources:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          {{- if .Values.storage.volumes }}
+          {{- if .Values.picodata.volumes }}
           volumeMounts:
-            {{- range .Values.storage.volumes }}
+            {{- range .Values.picodata.volumes }}
             - name: {{ .name }}
               mountPath: {{ .mountPath }}
             {{- end }}
@@ -95,25 +97,25 @@ spec:
           dnsConfig:
             searches:
               - $(INSTANCE_NAME)
-      {{- with .Values.storage.nodeSelector }}
+      {{- with .Values.picodata.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.storage.affinity }}
+      {{- with .Values.picodata.affinity }}
       affinity:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.storage.tolerations }}
+      {{- with .Values.picodata.tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.storage.topologySpreadConstraints }}
+      {{- with .Values.picodata.topologySpreadConstraints }}
       topologySpreadConstraints:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-  {{- if .Values.storage.volumes }}
+  {{- if .Values.picodata.volumes }}
   volumeClaimTemplates:
-    {{- range .Values.storage.volumes }}
+    {{- range .Values.picodata.volumes }}
     - metadata:
         name: {{ .name | default "pvc" }}
         namespace: {{ $.Release.Namespace | default "default" }}

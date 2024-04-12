@@ -62,11 +62,11 @@ Create the name of the service account to use
 {{- end }}
 
 {{/*
-Get router target binary port from values.
+Get target binary port from values.
 Should be used only with default function!
 */}}
-{{- define "picodata.router.binaryTargetPort" -}}
-{{- range .Values.router.service.ports }}
+{{- define "picodata.binaryTargetPort" -}}
+{{- range .Values.picodata.service.ports }}
 {{- if eq .name "binary" }}
 {{- .targetPort }}
 {{- end }}
@@ -74,35 +74,11 @@ Should be used only with default function!
 {{- end }}
 
 {{/*
-Get router target http port from values.
+Get target http port from values.
 Should be used only with default function!
 */}}
-{{- define "picodata.router.httpTargetPort" -}}
-{{- range .Values.router.service.ports }}
-{{- if eq .name "http" }}
-{{- .targetPort }}
-{{- end }}
-{{- end }}
-{{- end }}
-
-{{/*
-Get storage target binary port from values.
-Should be used only with default function!
-*/}}
-{{- define "picodata.storage.binaryTargetPort" -}}
-{{- range .Values.storage.service.ports }}
-{{- if eq .name "binary" }}
-{{- .targetPort }}
-{{- end }}
-{{- end }}
-{{- end }}
-
-{{/*
-Get router target http port from values.
-Should be used only with default function!
-*/}}
-{{- define "picodata.storage.httpTargetPort" -}}
-{{- range .Values.storage.service.ports }}
+{{- define "picodata.httpTargetPort" -}}
+{{- range .Values.picodata.service.ports }}
 {{- if eq .name "http" }}
 {{- .targetPort }}
 {{- end }}
@@ -113,19 +89,13 @@ Should be used only with default function!
 Generate first peer hostname.
 */}}
 {{- define "picodata.peerUri" -}}
-{{ include "picodata.fullname" . }}-router-0.{{ include "picodata.fullname" . }}-router-interconnect.{{ .Release.Namespace | default "default" }}.svc.cluster.local:{{ include "picodata.router.binaryTargetPort" . }}
+{{ include "picodata.fullname" . }}-0.{{ include "picodata.fullname" . }}-interconnect.{{ .Release.Namespace | default "default" }}.svc.cluster.local:{{ include "picodata.binaryTargetPort" . }}
 {{- end -}}
 
 {{/*
-Generate storage uri.
+Generate uri.
 */}}
-{{- define "picodata.storage.advertiseUri" -}}
-$(INSTANCE_NAME).{{ include "picodata.fullname" . }}-storage-interconnect.{{ .Release.Namespace | default "default" }}.svc.cluster.local:{{ include "picodata.storage.binaryTargetPort" . }}
+{{- define "picodata.advertiseUri" -}}
+$(INSTANCE_NAME).{{ include "picodata.fullname" . }}-interconnect.{{ .Release.Namespace | default "default" }}.svc.cluster.local:{{ include "picodata.binaryTargetPort" . }}
 {{- end -}}
 
-{{/*
-Generate router uri.
-*/}}
-{{- define "picodata.router.advertiseUri" -}}
-$(INSTANCE_NAME).{{ include "picodata.fullname" . }}-router-interconnect.{{ .Release.Namespace | default "default" }}.svc.cluster.local:{{ include "picodata.router.binaryTargetPort" . }}
-{{- end -}}

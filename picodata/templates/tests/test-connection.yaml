@@ -11,5 +11,5 @@ spec:
     - name: curl
       image: busybox
       command: ['curl']
-      args: ['{{ include "picodata.fullname" . }}:{{ include "picodata.router.httpTargetPort" . }}']
+      args: ['{{ include "picodata.fullname" . }}:{{ include "picodata.httpTargetPort" . }}']
   restartPolicy: Never

@@ -1,9 +1,9 @@
-{{- if .Values.router.ingress.enabled -}}
+{{- if .Values.picodata.ingress.enabled -}}
 {{- $fullName := printf "%s-%s" (include "picodata.fullname") "ext-ingress" -}}
-{{- $svcPort := include "picodata.router.httpTargetPort" . -}}
-{{- if and .Values.router.ingress.className (not (semverCompare ">=1.18-0" .Capabilities.KubeVersion.GitVersion)) }}
-  {{- if not (hasKey .Values.router.ingress.annotations "kubernetes.io/ingress.class") }}
-  {{- $_ := set .Values.router.ingress.annotations "kubernetes.io/ingress.class" .Values.router.ingress.className}}
+{{- $svcPort := include "picodata.picodata.httpTargetPort" . -}}
+{{- if and .Values.picodata.ingress.className (not (semverCompare ">=1.18-0" .Capabilities.KubeVersion.GitVersion)) }}
+  {{- if not (hasKey .Values.picodata.ingress.annotations "kubernetes.io/ingress.class") }}
+  {{- $_ := set .Values.picodata.ingress.annotations "kubernetes.io/ingress.class" .Values.picodata.ingress.className}}
   {{- end }}
 {{- end }}
 ---
@@ -23,17 +23,17 @@ metadata:
     app.kubernetes.io/cluster: {{ .Release.Name }}
     app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
-  {{- with .Values.router.ingress.annotations }}
+  {{- with .Values.picodata.ingress.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
   {{- end }}
 spec:
-  {{- if and .Values.router.ingress.className (semverCompare ">=1.18-0" .Capabilities.KubeVersion.GitVersion) }}
-  ingressClassName: {{ .Values.router.ingress.className }}
+  {{- if and .Values.picodata.ingress.className (semverCompare ">=1.18-0" .Capabilities.KubeVersion.GitVersion) }}
+  ingressClassName: {{ .Values.picodata.ingress.className }}
   {{- end }}
-  {{- if .Values.router.ingress.tls }}
+  {{- if .Values.picodata.ingress.tls }}
   tls:
-    {{- range .Values.router.ingress.tls }}
+    {{- range .Values.picodata.ingress.tls }}
     - hosts:
         {{- range .hosts }}
         - {{ . | quote }}
@@ -42,7 +42,7 @@ spec:
     {{- end }}
   {{- end }}
   rules:
-    {{- range .Values.router.ingress.hosts }}
+    {{- range .Values.picodata.ingress.hosts }}
     - host: {{ .host | quote }}
       http:
         paths:

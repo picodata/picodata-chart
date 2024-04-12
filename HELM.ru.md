@@ -234,7 +234,7 @@ router:
       # kubernetes.io/ingress.class: nginx
       # kubernetes.io/tls-acme: "true"
     hosts:
-      — host: picodata.router.local
+      — host: picodata.picodata.local
         paths:
           — path: /
             pathType: ImplementationSpecific
