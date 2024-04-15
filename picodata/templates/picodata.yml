@@ -59,10 +59,6 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.namespace
-            - name: INSTANCE_ROLE
-              value: {{ .Values.picodata.role }}
-            - name: INSTANCE_GROUP
-              value: {{ .Values.picodata.group }}
             - name: PEER_URI
               value: {{ include "picodata.peerUri" . }}
             - name: ADVERTISE_URI

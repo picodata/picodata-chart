@@ -10,7 +10,7 @@ metadata:
     app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
 spec:
-  clusterIP: None
+  type: {{ .Values.picodata.service.type | default "ClusterIP" }}
   ports:
     {{- toYaml .Values.picodata.service.ports | nindent 4 }}
   selector:
