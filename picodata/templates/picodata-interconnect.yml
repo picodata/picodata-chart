@@ -11,6 +11,7 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service }}
 spec:
   type: {{ .Values.picodata.service.type | default "ClusterIP" }}
+  clusterIP: None
   ports:
     {{- toYaml .Values.picodata.service.ports | nindent 4 }}
   selector:

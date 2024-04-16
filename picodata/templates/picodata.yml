@@ -71,6 +71,10 @@ spec:
             - name: {{ .name }}
               value: {{ .value }}
             {{- end }}
+          {{- with .Values.picodata.startupProbe }}
+          startupProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}            
           {{- with .Values.picodata.livenessProbe }}
           livenessProbe:
             {{- toYaml . | nindent 12 }}
