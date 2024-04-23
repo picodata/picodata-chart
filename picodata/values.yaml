@@ -59,27 +59,24 @@ picodata:
         targetPort: 8081
 
   livenessProbe:
-    httpGet:
-      path: /health
-      port: http
+    tcpSocket:
+      port: binary
     initialDelaySeconds: 30
     timeoutSeconds: 5
     periodSeconds: 20
     successThreshold: 1
     failureThreshold: 3      
   readinessProbe:
-    httpGet:
-      path: /health
-      port: http
+    tcpSocket:
+      port: binary
     initialDelaySeconds: 10
     timeoutSeconds: 5
     periodSeconds: 20
     successThreshold: 1
     failureThreshold: 3 
   startupProbe:
-    httpGet:
-      path: /health
-      port: http
+    tcpSocket:
+      port: binary
     periodSeconds: 30
     failureThreshold: 20
     timeoutSeconds: 5
@@ -128,6 +125,8 @@ picodata:
     #     - picodata
 
   env:
+    - name: PICODATA_FAILURE_DOMAIN
+      value: HOST=picokube
     - name: PICODATA_LOG_LEVEL
       value: info
 
