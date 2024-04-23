@@ -1,0 +1,30 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: backup-{{ $.Release.Namespace | default "default" }}
+  namespace: {{ $.Release.Namespace | default "default" }}
+spec:
+  schedule: "0 15 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: backup-picodata
+            image: docker.binary.picodata.io/backup-picodata:latest
+            env:
+            - name: BACKUP_PATH
+              value: "/pico"
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom: 
+                secretKeyRef:
+                  name: picodata-s3
+                  key: aws_access_key_id  
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: picodata-s3
+                  key: aws_secret_access_key
+            - name: S3_BUCKET
+              value: "picodata-gitlab"
+          restartPolicy: OnFailure
