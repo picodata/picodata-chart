@@ -14,4 +14,5 @@ tar -zcvf ${BACKUP_FILENAME} ${BACKUP_PATH}
 
 aws --endpoint-url=$S3_ENDPOINT s3 cp ${BACKUP_FILENAME} s3://${S3_BUCKET}
 
+
 rm $BACKUP_FILENAME
