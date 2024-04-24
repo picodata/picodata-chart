@@ -82,6 +82,7 @@ picodata:
     timeoutSeconds: 5
 
   ingress: {}
+    # enabled: true
     # className: 'nginx'
     # annotations:
     #   kubernetes.io/ingress.class: nginx
@@ -140,3 +141,6 @@ picodata:
       size: 1Gi
 
   dataDir: /pico
+
+  backup:
+    enabled: true
