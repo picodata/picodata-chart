@@ -131,14 +131,16 @@ picodata:
 
   volumes:
     - name: picodata
-      volumeMode: Filesystem
       accessModes:
         - ReadWriteOnce
       mountPath: /pico
       storageClassName: yc-network-ssd
+      #storageClassName: csi-s3
       size: 1Gi
 
   dataDir: /pico
 
   backup:
     enabled: true
+    backup_path: /pico/backup
+    size: 1Gi

@@ -15,18 +15,40 @@ spec:
             image: docker.binary.picodata.io/backup-picodata:latest
             env:
             - name: BACKUP_PATH
-              value: "/pico"
+              value: {{ .Values.picodata.backup.backup_path }}
             - name: AWS_ACCESS_KEY_ID
               valueFrom: 
                 secretKeyRef:
                   name: picodata-s3
-                  key: aws_access_key_id  
+                  key: accessKeyID  
             - name: AWS_SECRET_ACCESS_KEY
               valueFrom:
                 secretKeyRef:
                   name: picodata-s3
-                  key: aws_secret_access_key
+                  key: secretAccessKey
             - name: S3_BUCKET
               value: "picodata-gitlab"
-          restartPolicy: OnFailure
+          restartPolicy: OnFailure              
+          volumeMounts:
+            - mountPath: {{ .Values.picodata.backup.backup_path }}
+              name: backup-{{ $.Release.Namespace | default "default" }}
+      volumes:
+          - name: backup-{{ $.Release.Namespace | default "default" }}
+            persistentVolumeClaim:
+              claimName: backup-{{ $.Release.Namespace | default "default" }}
+              readOnly: false
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: backup-{{ $.Release.Namespace | default "default" }}
+  namespace: {{ $.Release.Namespace | default "default" }}
+spec:
+  accessModes:
+  - ReadWriteMany
+  resources:
+    requests:
+      storage: {{ .Values.picodata.backup.size }}
+  storageClassName: csi-s3              
 {{- end }}

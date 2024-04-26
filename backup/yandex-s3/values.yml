@@ -13,7 +13,7 @@ storageClass:
   # Name
   name: csi-s3
   # Use a single bucket for all dynamically provisioned persistent volumes
-  singleBucket: ""
+  singleBucket: "picodata-gitlab"
   # mounter to use - either geesefs, s3fs or rclone (default geesefs)
   mounter: geesefs
   # GeeseFS mount options
@@ -32,13 +32,13 @@ secret:
   # Name of the secret
   name: picodata-s3
   # S3 Access Key
-  accessKey: "aws_access_key_id"
+  accessKey: accessKeyID
   # S3 Secret Key
-  secretKey: "aws_secret_access_key"
+  secretKey: secretAccessKey
   # Endpoint
-  endpoint: https://storage.yandexcloud.net
+  endpoint: endpoint
   # Region
-  region: ""
+  region: region
 
 tolerations:
   all: false
