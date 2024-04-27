@@ -132,15 +132,14 @@ picodata:
   volumes:
     - name: picodata
       accessModes:
-        - ReadWriteOnce
+        - ReadWriteMany
       mountPath: /pico
-      storageClassName: yc-network-ssd
-      #storageClassName: csi-s3
+      #storageClassName: yc-network-ssd
+      storageClassName: csi-s3
       size: 1Gi
 
   dataDir: /pico
 
   backup:
     enabled: true
-    backup_path: /pico/backup
-    size: 1Gi
+    backet: picodata-gitlab
