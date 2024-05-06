@@ -141,5 +141,6 @@ picodata:
   dataDir: /pico
 
   backup:
-    enabled: true
+    enabled: false
     backet: picodata-gitlab
+    restore: true

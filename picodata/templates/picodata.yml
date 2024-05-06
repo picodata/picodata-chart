@@ -29,7 +29,7 @@ spec:
       securityContext:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "picodata.serviceAccountName" . }}
+      serviceAccountName: {{ include "picodata.serviceAccountName" . }}               
       containers:
         - name: {{ include "picodata.fullname" . }}
           image: {{ .Values.image.repository }}/{{ .Values.image.tag }}
