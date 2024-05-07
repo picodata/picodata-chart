@@ -12,10 +12,10 @@ spec:
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: picodata-restore
+  name: picodata-pico-0
   namespace: picodata
 spec:
-  storageClassName: csi-s3
+  storageClassName: yc-network-ssd
   dataSource:
     name: picodata-snapshot
     kind: VolumeSnapshot
@@ -25,23 +25,3 @@ spec:
   resources:
     requests:
       storage: 1Gi
-
----
-apiVersion: v1
-kind: Pod
-metadata:
-  name: picodata-restore
-  namespace: picodata
-spec:
-  containers:
-    - name: picodata-restore
-      image: docker.binary.picodata.io/ubuntu:22.04
-      command: ["/bin/sh"]
-      args: ["-c", "while true; do sleep 5; done"]
-      volumeMounts:
-        - name: picodata-restore
-          mountPath: /pico
-  volumes:
-    - name: picodata-restore
-      persistentVolumeClaim:
-        claimName: picodata-restore
