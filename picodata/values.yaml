@@ -135,6 +135,7 @@ picodata:
         - ReadWriteOnce
       mountPath: /pico
       storageClassName: yc-network-ssd
+      #storageClassName: longhorn
       #storageClassName: csi-s3
       size: 1Gi
 
