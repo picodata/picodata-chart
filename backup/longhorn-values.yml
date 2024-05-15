@@ -120,7 +120,7 @@ service:
 
 persistence:
   # -- Setting that allows you to specify the default Longhorn StorageClass.
-  defaultClass: true
+  defaultClass: false
   # -- Filesystem type of the default Longhorn StorageClass.
   defaultFsType: ext4
   # -- mkfs parameters of the default Longhorn StorageClass.
@@ -278,7 +278,7 @@ defaultSettings:
   # -- Storage network for in-cluster traffic. When unspecified, Longhorn uses the Kubernetes cluster network.
   storageNetwork: ~
   # -- Flag that prevents accidental uninstallation of Longhorn.
-  deletingConfirmationFlag: ~
+  deletingConfirmationFlag: true
   # -- Timeout between the Longhorn Engine and replicas. Specify a value between "8" and "30" seconds. The default value is "8".
   engineReplicaTimeout: ~
   # -- Setting that allows you to enable and disable snapshot hashing and data integrity checks.
@@ -349,7 +349,8 @@ longhornManager:
   #   value: "value"
   #   effect: "NoSchedule"
   # -- Node selector for Longhorn Manager. Specify the nodes allowed to run Longhorn Manager.
-  nodeSelector: {}
+  nodeSelector:
+    app: services
   ## If you want to set node selector for Longhorn Manager DaemonSet, delete the `{}` in the line above
   ## and uncomment this example block
   #  label-key1: "label-value1"
@@ -373,7 +374,8 @@ longhornDriver:
   #   value: "value"
   #   effect: "NoSchedule"
   # -- Node selector for Longhorn Driver. Specify the nodes allowed to run Longhorn Driver.
-  nodeSelector: {}
+  nodeSelector:
+    app: services
   ## If you want to set node selector for Longhorn Driver Deployer Deployment, delete the `{}` in the line above
   ## and uncomment this example block
   #  label-key1: "label-value1"
@@ -393,7 +395,8 @@ longhornUI:
   #   value: "value"
   #   effect: "NoSchedule"
   # -- Node selector for Longhorn UI. Specify the nodes allowed to run Longhorn UI.
-  nodeSelector: {}
+  nodeSelector:
+    app: services
   ## If you want to set node selector for Longhorn UI Deployment, delete the `{}` in the line above
   ## and uncomment this example block
   #  label-key1: "label-value1"

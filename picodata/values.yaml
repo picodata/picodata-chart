@@ -134,8 +134,8 @@ picodata:
       accessModes:
         - ReadWriteOnce
       mountPath: /pico
-      storageClassName: yc-network-ssd
-      #storageClassName: longhorn
+      #storageClassName: yc-network-ssd
+      storageClassName: longhorn
       #storageClassName: csi-s3
       size: 1Gi
 
@@ -144,4 +144,3 @@ picodata:
   backup:
     enabled: false
     backet: picodata-gitlab
-    restore: true
