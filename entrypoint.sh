@@ -1,5 +1,4 @@
 #!/bin/sh
-sleep 3
 
 if [ -z "${INSTANCE_NAME}" ]; then
     INSTANCE_NAME="$(hostname)"
