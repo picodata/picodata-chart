@@ -1,7 +1,7 @@
 
 image:
   repository: docker.binary.picodata.io
-  pullPolicy: Always
+  pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
   tag: 'picodata:24.3.2'
 
@@ -22,7 +22,7 @@ fullnameOverride: ''
 
 picodata:
 
-  replicas: 1
+  replicas: 2
 
   podAnnotations: {}
 
@@ -80,7 +80,7 @@ picodata:
     timeoutSeconds: 3
 
   ingress:
-    enabled: true
+    enabled: false
     className: 'nginx'
     annotations:
       kubernetes.io/tls-acme: "true"
@@ -132,8 +132,8 @@ picodata:
     #     - picodata
 
   env:
-    - name: PICODATA_FAILURE_DOMAIN
-      value: HOST=picokube
+#    - name: PICODATA_FAILURE_DOMAIN
+#      value: HOST=picokube
     - name: PICODATA_LOG_LEVEL
       value: info
 
@@ -151,4 +151,4 @@ picodata:
 
   backup:
     enabled: false
-    backet: picodata-gitlab
+    bucket: picodata-gitlab
