@@ -132,8 +132,10 @@ picodata:
     #     - picodata
 
   env:
-#    - name: PICODATA_FAILURE_DOMAIN
-#      value: HOST=picokube
+    - name: PICODATA_FAILURE_DOMAIN
+      value: HOST=picokube
+    - name: PICODATA_INIT_REPLICATION_FACTOR
+      value: 2
     - name: PICODATA_LOG_LEVEL
       value: info
 
