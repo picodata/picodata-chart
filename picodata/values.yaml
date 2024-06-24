@@ -3,7 +3,7 @@ image:
   repository: docker.binary.picodata.io
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: 'picodata:24.3.2'
+  tag: 'picodata:24.4.1'
 
 imagePullSecrets: []
 
