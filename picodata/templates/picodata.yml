@@ -65,6 +65,8 @@ spec:
               value: $(POD_IP):{{ include "picodata.binaryTargetPort" . }}
             - name: ADVERTISE_URI
               value: {{ include "picodata.advertiseUri" . }}
+            - name: PICODATA_FAILURE_DOMAIN
+              value: HOST=$(INSTANCE_NAME)
             - name: PICODATA_DATA_DIR
               value: {{ .Values.picodata.dataDir }}
             - name: PICODATA_HTTP_LISTEN
