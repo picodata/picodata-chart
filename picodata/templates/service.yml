@@ -1,0 +1,39 @@
+{{- range $tier, $tier_map :=  $.Values.picodata.tiers }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $tier_map.tierName }}-{{ include "picodata.fullname" $ }}-interconnect
+  namespace: {{ $.Release.Namespace | default "default" }}
+  labels:
+    app.kubernetes.io/name: {{ $tier_map.tierName }}-{{ include "picodata.fullname" $ }}-interconnect
+    app.kubernetes.io/cluster: {{ $.Values.clusterId }}
+    app.kubernetes.io/version: {{ $.Chart.AppVersion | quote }}
+    app.kubernetes.io/managed-by: {{ $.Release.Service }}   
+spec:
+  type: {{ $.Values.picodata.service.type | default "ClusterIP" }}
+  clusterIP: None
+  publishNotReadyAddresses: true
+  ports:
+    {{- toYaml $.Values.picodata.service.ports | nindent 4 }}
+  selector:
+    app.kubernetes.io/name: {{ $tier_map.tierName }}-{{ include "picodata.fullname" $ }}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $tier_map.tierName }}-{{ include "picodata.fullname" $ }}-ext
+  namespace: {{ $.Release.Namespace | default "default" }}
+  labels:
+    app.kubernetes.io/name: {{ $tier_map.tierName }}-{{ include "picodata.fullname" $ }}-ext
+    app.kubernetes.io/cluster: {{ $.Values.clusterId }}
+    app.kubernetes.io/version: {{ $.Chart.AppVersion | quote }}
+    app.kubernetes.io/managed-by: {{ $.Release.Service }}
+spec:
+  type: {{ $.Values.picodata.service.type | default "ClusterIP" }}
+  ports:
+    {{- toYaml $.Values.picodata.service.ports | nindent 4 }}
+  selector:
+    app.kubernetes.io/name: {{ $tier_map.tierName }}-{{ include "picodata.fullname" $ }}
+{{- end }}

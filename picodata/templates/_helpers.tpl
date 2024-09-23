@@ -86,6 +86,18 @@ Should be used only with default function!
 {{- end }}
 
 {{/*
+Get psql binary port from values.
+Should be used only with default function!
+*/}}
+{{- define "picodata.psqlTargetPort" -}}
+{{- range .Values.picodata.service.ports }}
+{{- if eq .name "psql" }}
+{{- .targetPort }}
+{{- end }}
+{{- end }}
+{{- end }}
+
+{{/*
 Generate first peer hostname.
 */}}
 {{- define "picodata.peerUri" -}}

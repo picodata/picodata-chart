@@ -1,10 +1,15 @@
 # Установка Picodata с помощью Helm
 
-- [Установка кластера с конфигурацией по умолчанию](#Установка-кластера-с-конфигурацией-по-умолчанию)
-- [Аргументы командной строки helm](#Аргументы-командной-строки-helm)
-  — [Концепции](#Концепции)
-  — [Полезные опции](#Полезные-опции)
-- [Переопределение параметров и запуск своего кластера](#Переопределение-параметров-и-запуск-своего-кластера)
+- [Установка кластера с конфигурацией по умолчанию](#установка-кластера-с-конфигурацией-по-умолчанию)
+- [Аргументы командной строки helm](#аргументы-командной-строки-helm)
+  — [Полезные опции](#полезные-опции)
+- [Переопределение параметров и запуск своего кластера](#переопределение-параметров-и-запуск-своего-кластера)
+  — [Параметры дисковой подсистемы для кластера](#параметры-дисковой-подсистемы-для-кластера)
+  — [Задание портов для сервисов](#задание-портов-для-сервисов)
+  — [Задание портов для сервисов](#задание-портов-для-сервисов)
+  — [Определение конфигурации тиров](#определение-конфигурации-тиров)
+- [s3 Integration](#s3-integration)
+
 
 Одним из самых распространенных способов управлять установкой приложений в 
 `kubernetes` является пакетный менеджер `helm`. Он позволяет шаблонизировать
@@ -16,68 +21,36 @@
 
 ---
 
-### Установка кластера с конфигурацией по умолчанию
+## Установка кластера с конфигурацией по умолчанию
 
-Чтобы протестировать `picodata`, первым делом нужно поднять кластер `kubernetes` 
+Чтобы протестировать `picodata`, первым делом нужно поднять кластер `kubernetes`
 или `minikube`, а затем установить чарт. Для начала клонируем репозиторий:
+
 ```shell
-git clone https://git.picodata.io/picodata/picodata/picodata.git
+git clone https://git.picodata.io/picodata/picodata/picodata-chart.git
 ```
 
 Переходим в директорию с чартом:
+
 ```shell
 cd picodata/
 ```
 
-Наиболее простой вариант установки — это установка с параметрами по умолчанию. 
+Наиболее простой вариант установки — это установка с параметрами по умолчанию.
 Выполняем вызов `helm` без параметров.
+
 ```shell
-helm upgrade --install picodata -n picodata .
+helm upgrade --install picodata -n picodata . --create-namespace
 ```
 
-Так как мы ничего не меняли в `values` чарта, то установленный нами
-релиз `picodata` имеет тип сервиса `ClusterIP` и по умолчанию
-доступен только изнутри кластера `kubernetes`. Поэтому для проверки
-состояния `picodata` необходимо запустить еще один под в том же
-неймспейсе (по умолчанию используется неймспейс default):
-```shell
-kubectl run -it --image=docker.binary.picodata.io/picodata-diag:latest picodata-diag
-```
+helm chart выкладывается в репозиторий из которого его можно получить следующими командами:
 
-Как только контейнер запустится и мы окажемся в его консоли, необходимо 
-осуществить подключение к кластеру `picodata`.
 ```shell
-tarantoolctl connect my-test-release-picodata-ext.default.svc.cluster.local:3031
+helm pull oci://docker-public.binary.picodata.io/helm/picodata
+helm upgrade --install picodata -n picodata <путь к tgz архиву> --create-namespace
 ```
-
-После подключения можно посмотреть состояние всей Raft-группы:
-```shell
-box.space.raft_group:fselect()
-```
-
----
 
 ### Аргументы командной строки helm
-
----
-
-#### Концепции
-
-- **Чарт** — набор шаблонов манифестов и шаблонов "хэлперов" для упрощенного
-конфигурирования устанавливаемого в `kubernetes` приложения. `Helm chart` — это
-условный аналог пакета `rpm` или `deb`, но только для `kubernetes`.
-- **Релиз** — это сочетание чарта и имени релиза, переданного `helm` в командной 
-строке. Откат, а также возможность установить несколько экзмепляров 
-кластера работают только в рамках релиза.
-- **Ревизия** — внутренняя версия установки релиза. Если мы установили
-чарт с именем релиза `my-test-release` только один раз, то ревизия
-релиза будет только одна. Если мы после этого еще дважды установим чарт
-с тем же самым именем релиза, то ревизий будет уже 3. Допускается
-переключение только на более раннюю ревизию. Все ревизии хранятся в виде
-секретов в кластере `kubernetes`.
-- **Values** — файл параметров. По умолчанию в каждом чарте уже есть `values`
-со значениями по умолчанию, но концепция `helm` заключается в возможности 
-переопределять только необходимые значения, оставляя остальные дефолтными.
 
 ---
 
@@ -85,18 +58,21 @@ box.space.raft_group:fselect()
 
 Для примера основных опция `helm` можно рассмотреть команду:
 ```shell
+
 helm upgrade my-release-name picodata \
   --install \
   --namespace my-namespace \
   --create-namespace
   --values my-values.yml \
-  --version 0.0.1 \
+  --version 0.0.3 \
   --devel \
   --debug \
   --wait \
   --atomic
 ```
+
 Пояснение:
+
 - `helm upgrade` — обновить уже установленный релиз.
 - `my-release-name` — название релиза, в рамках которого будут сохраняться
     ревизии.
@@ -123,30 +99,33 @@ helm upgrade my-release-name picodata \
 
 ### Переопределение параметров и запуск своего кластера
 
-Чтобы получить копию `values` для переопределения конфигурации по умолчанию, 
+Чтобы получить копию `values` для переопределения конфигурации по умолчанию,
 нужно воспользоваться командой:
+
 ```shell
 helm show values >> my-new-values.yml
 ```
 
-В полученном файле `my-release-values.yml` есть следующие параметры, которые 
-можно переопределить.
+В полученном файле `my-release-values.yml` есть следующие параметры, которые можно переопределить.
 
 - Параметры образа, а также репозиторий, откуда будет получен образ `picodata`
+- Образ собирается из на осонове rockylinux:8 из [Dockerfile](https://git.picodata.io/picodata/picodata/picodata/-/blob/master/helm/picodata.Dockerfile)
+
 ```yaml
 image:
-  repository: docker.binary.picodata.io
+  repository: docker-public.binary.picodata.io
   pullPolicy: IfNotPresent
   # Если убрать тег в values, то будет использован тег, указанный в chartVersion,
   # или переданный в опции --version
-  tag: 'picodata:24.4.1'
+  tag: 'picodata:master'
 
 # Если кластер kubernetes находится в закрытом контуре и используется 
 # приватный репозиторий, то необходимо заранее создать imagePullSecrets
 imagePullSecrets: []
 ```
 
-- Параметры `service account`
+#### Параметры `service account`
+
 ```yaml
 serviceAccount:
   # Обозначает, должен ли быть создан service account
@@ -159,87 +138,152 @@ serviceAccount:
 ```
 
 - Параметры перезаписи имени.
+
 ```yaml
 nameOverride: ''
 fullnameOverride: ''
 ```
 
+#### Параметры дисковой подсистемы для кластера
+
 ```yaml
-  # Количество подов (инстансов) picodata
-  replicaCount: 2
-  
-  # Фактор репликации к котому будет стремиться кластер.
-  replicationFactor: 2
-  
-  nameOverride: ''
-  fullnameOverride: ''
+  # Рабочая директория инстанса.
+  dataDir: /pico
+  volumes:
+    - name: picodata
+      accessModes:
+        - ReadWriteOnce
+      # Точка монтирования рабочей директории инстанса.  
+      mountPath: /pico
+      # Управление классамом хранилища
+      storageClassName: yc-network-ssd
+```
 
-  podAnnotations: {}
+#### Задание портов для сервисов
 
-  securityContext:
-    # fsGroup: 1000
-    # capabilities:
-    #   drop:
-    #   — ALL
-    readOnlyRootFilesystem: true
-    runAsNonRoot: true
-    runAsUser: 1000
-    runAsGroup: 1000
-
-  # Настройки, которые будут переданы в оба сервиса router.
-  # В сервисе router-interconnect будет использован только массив портов.
-  # В сервисе ext будут использованы все параметры, указанные в этом блоке.
+```yaml
   service:
     type: ClusterIP
     ports:
-      — name: binary
+        # Бинарный порт общения между инстансами
+      - name: binary
         protocol: TCP
         port: 3301
         targetPort: 3301
-      — name: http
+        # Порт HTTP-сервера, где доступно WebUI, а также url для сбора метрик (/metrics)
+      - name: http
         protocol: TCP
         port: 8081
         targetPort: 8081
+        # Порт общения по протоколу Pgproto
+      - name: psql
+        protocol: TCP
+        port: 5432
+        targetPort: 5432
+```
 
-  # Параметры ingress, если в кластере kubernetes установлен какой-либо 
-  # ingress controller.
-  ingress:
-    enabled: false
-    className: 'nginx'
-    annotations:
-      kubernetes.io/tls-acme: "true"
-      cert-manager.io/cluster-issuer: letsencrypt
-    hosts:
-      - host: picodata.local
-        paths:
-          - path: /
-            pathType: ImplementationSpecific
-    tls:
-      - secretName: picodata-local-tls
+#### Определение конфигурации тиров
+
+```yaml
+  # В дефолтном values.yaml определен один тир
+  tiers:
+    - tierName: default
+      # Фактор репликации к котому будет стремиться кластер.
+      replication_factor: 1
+      # Количество подов (инстансов) picodata
+      replicas: 2
+      # Признак тира <tier_name>, определяющий возможность инстансов участвовать в голосовании на выборах raft-лидера.
+      can_vote: true
+      # Размер диска для каждого инстанса
+      diskSize: 1Gi
+      plugin_dir: null 
+      audit: null
+      # Режим безопасного удаления рабочих файлов инстанса путем многократной перезаписи специальными битовыми последовательностями
+      shredding: false
+      memtx:
+        # Объем памяти в байтах, выделяемый для хранения кортежей
+        memory: 128M
+        # Максимальное количество снапшотов, хранящихся в директории memtx_dir
+        checkpoint_count: 2
+        # Период активности службы создания снапшотов (checkpoint daemon) в секундах
+        checkpoint_interval: 3600.0
+      vinyl:
+        # Максимальное количество оперативной памяти в байтах, которое использует движок хранения vinyl.
+        memory: 67108864
+        # Размер кэша в байтах для движка хранения vinyl.
+        cache: 33554432
+      iproto:
+        # Максимальное количество сообщений, которое Picodata обрабатывает параллельно.
+        max_concurrent_messages: 76
+      # Модуль Pgproto реализует протокол PostgreSQL  
+      pg:
+        # Признак использования протокола SSL при подключении к Pgproto.
+        ssl: false
+      log:
+        level: info 
+        destination: null 
+        format: plain
+      # Значения по-умолчанию для cpu/mem ресурсов.  
+      resources:
+        limits:
+          cpu: 200m
+          memory: 256Mi
+        requests:
+          cpu: 100m
+          memory: 128Mi
+        # Дополнительные переменные окружения
+        env:
+        - name: PICODATA_LOG_LEVEL
+          value: info
+      # affinity для каждого тира
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: app
+                    operator: In
+                    values:
+                      - services
+      # Параметры ingress для каждого тира
+      ingress:
+        enabled: false
+        className: 'nginx'
+        annotations:
+          kubernetes.io/tls-acme: "true"
+          cert-manager.io/cluster-issuer: letsencrypt
         hosts:
-          - picodata.local
+          - host: picodata.local
+            paths:
+              - path: /
+                pathType: ImplementationSpecific
+        tls:
+          - secretName: picodata-local-tls
+            hosts:
+              - picodata.local
   
-  # В текущий момент liveness и readiness probe не реализованы в Picodata
-  livenessProbe:
-    {}
-    # httpGet:
-    #   path: /health
-    #   port: http
-  readinessProbe:
-    {}
-    # httpGet:
-    #   path: /health
-    #   port: http
 
-  resources:
-    {}
-    # По умолчанию не задано никаких ограничений по ресурсам. 
-    # limits:
-    #   cpu: 100m
-    #   memory: 128Mi
-    # requests:
-    #   cpu: 100m
-    #   memory: 128Mi
+  # livenessProbe/readinessProbe для кластера Picodata
+  livenessProbe:
+    tcpSocket:
+      port: binary
+    timeoutSeconds: 3
+    periodSeconds: 20
+    successThreshold: 1
+    failureThreshold: 3      
+  readinessProbe:
+    tcpSocket:
+      port: binary
+    timeoutSeconds: 3
+    periodSeconds: 20
+    successThreshold: 1
+    failureThreshold: 3 
+  startupProbe:
+    tcpSocket:
+      port: binary
+    periodSeconds: 30
+    failureThreshold: 20
+    timeoutSeconds: 3
 
   # Управление автоматическим горизонтальным масштабированием
   autoscaling:
@@ -256,70 +300,30 @@ fullnameOverride: ''
 
   tolerations: []
 
-  affinity: {}
-
-  topologySpreadConstraints:
-    {}
+  topologySpreadConstraints: {}
     # — maxSkew: 1
     #   topologyKey: kubernetes.io/hostname
     #   whenUnsatisfiable: DoNotSchedule
     #   matchLabelKeys:
     #     — router
 
-  # Дополнительные переменные окружения
-  env:
-    — name: LOG_LEVEL
-      value: info
 ```
 
-- Параметры `picodata` максимально похожи, но есть определенные отличия.
-  Наиболее важное из них, например, — это возможность указать `volumes`.
-```yaml
-  volumes:
-    — name: journal
-      volumeMode: Block
-      accessModes:
-        — ReadWriteOnce
-      mountPath: /data/picodata
-      # По умолчанию будет использован default storage class
-      # storageClass: "nfs"
-      size: 5Gi
-```
+### s3 Integration
 
-- У `picodata` в блоке `service` можно задавать только порты.
-```yaml
-  service:
-    ports:
-      — name: binary
-        protocol: TCP
-        port: 3301
-        targetPort: 3301
-      — name: http
-        protocol: TCP
-        port: 8081
-        targetPort: 8081
-```
-
-
-- В связи с тем что `picodata` всегда устанавливается с диском, то для хранения 
-состояния используется не текущая рабочая директория заданная в образе, а 
-предварительно заданный путь.
-```yaml
-  dataDir: /data/picodata
-```
-
-# s3 integration
 docs:
 https://github.com/yandex-cloud/k8s-csi-s3
 
 ### Install
 
 Добавить ключи для s3 бакета:
+
 ```bash
 kubectl apply -f backup/pico-s3-secret.yml
 ```
 
 Установить csi-s3 драйвер в kubernetes кластер:
+
 ```bash
 cd backup/yandex-s3
 helm repo add yandex-s3 https://yandex-cloud.github.io/k8s-csi-s3/charts

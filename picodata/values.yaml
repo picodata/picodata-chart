@@ -2,49 +2,19 @@
 image:
   repository: docker.binary.picodata.io
   pullPolicy: IfNotPresent
-  # Overrides the image tag whose default is the chart appVersion.
-  tag: 'picodata:24.4.1'
+  tag: 'picodata:master'
 
-imagePullSecrets: []
-
-serviceAccount:
-  # Specifies whether a service account should be created
-  create: true
-  # Annotations to add to the service account
-  annotations: {}
-  # The name of the service account to use.
-  # If not set and create is true, a name is generated using the fullname template
-  name: ''
-
-nameOverride: ''
-fullnameOverride: ''
-
+clusterId: picokube
 
 picodata:
 
-  replicas: 2
-
-  podAnnotations: {}
-
-  podSecurityContext:
-    # fsGroup: 2000
-    # capabilities:
-    #   drop:
-    #   - ALL
-#    readOnlyRootFilesystem: true
-    runAsNonRoot: true
-    runAsUser: 1000
-    runAsGroup: 1000
-
-  securityContext:
-    fsGroup: 1000
-    # capabilities:
-    #   drop:
-    #   - ALL
-#    readOnlyRootFilesystem: true
-#    runAsNonRoot: true
-#    runAsUser: 1000
-#    runAsGroup: 1000
+  dataDir: /var/lib/picodata
+  volumes:
+    - name: picodata
+      accessModes:
+        - ReadWriteOnce
+      mountPath: /var/lib/picodata
+      storageClassName: yc-network-ssd
 
   service:
     type: ClusterIP
@@ -57,6 +27,63 @@ picodata:
         protocol: TCP
         port: 8081
         targetPort: 8081
+      - name: psql
+        protocol: TCP
+        port: 5432
+        targetPort: 5432
+
+  tiers:
+    - tierName: default
+      replicationFactor: 1
+      replicas: 2
+      canVote: true
+      diskSize: 1Gi
+      audit: null 
+      shredding: false
+      memtx:
+        memory: 128M 
+        checkpoint_count: 2 
+        checkpoint_interval: 3600.0
+      vinyl:
+        memory: 64M
+        cache: 32M
+      iproto:
+        max_concurrent_messages: 76
+      pg:
+        ssl: false
+      log:
+        level: info 
+        destination: null
+        format: plain
+      resources:
+        limits:
+          cpu: 200m
+          memory: 256Mi
+        requests:
+          cpu: 100m
+          memory: 128Mi
+
+      env:
+        - name: PICODATA_LOG_LEVEL
+          value: info
+
+      affinity: {}
+
+      ingress:
+        enabled: false
+        className: 'nginx'
+        annotations:
+          kubernetes.io/tls-acme: "true"
+          cert-manager.io/cluster-issuer: letsencrypt
+        hosts:
+          - host: picodata.local
+            paths:
+              - path: /
+                pathType: ImplementationSpecific
+        tls:
+          - secretName: picodata-local-tls
+            hosts:
+              - picodata.local
 
   livenessProbe:
     tcpSocket:
@@ -78,75 +105,28 @@ picodata:
     periodSeconds: 30
     failureThreshold: 20
     timeoutSeconds: 3
-
-  ingress:
-    enabled: false
-    className: 'nginx'
-    annotations:
-      kubernetes.io/tls-acme: "true"
-      cert-manager.io/cluster-issuer: letsencrypt
-    hosts:
-      - host: picodata.local
-        paths:
-          - path: /
-            pathType: ImplementationSpecific
-    tls:
-      - secretName: picodata-local-tls
-        hosts:
-          - picodata.local
-
-  resources: {}
-    # limits:
-    #   cpu: 100m
-    #   memory: 128Mi
-    # requests:
-    #   cpu: 100m
-    #   memory: 128Mi
-
-  autoscaling: {}
-    # enabled: false
-    # minReplicas: 1
-    # maxReplicas: 100
-    # targetCPUUtilizationPercentage: 80
-    # targetMemoryUtilizationPercentage: 80
-
+    
   nodeSelector: {}
 
   tolerations: []
 
-  affinity:
-    nodeAffinity:
-      requiredDuringSchedulingIgnoredDuringExecution:
-        nodeSelectorTerms:
-          - matchExpressions:
-              - key: app
-                operator: In
-                values:
-                  - services
+  podAnnotations: {}
+
+  podSecurityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 1000
+
+  securityContext:
+    fsGroup: 1000
 
   topologySpreadConstraints: {}
-    # - maxSkew: 1
-    #   topologyKey: kubernetes.io/hostname
-    #   whenUnsatisfiable: DoNotSchedule
-    #   matchLabelKeys:
-    #     - picodata
 
-  env:
-#    - name: PICODATA_FAILURE_DOMAIN
-#      value: HOST=picokube
-    - name: PICODATA_INIT_REPLICATION_FACTOR
-      value: 2
-    - name: PICODATA_LOG_LEVEL
-      value: info
+  autoscaling: {}
 
-  volumes:
-    - name: picodata
-      accessModes:
-        - ReadWriteOnce
-      mountPath: /pico
-      storageClassName: yc-network-ssd
-#      storageClassName: longhorn
-      #storageClassName: csi-s3
-      size: 1Gi
+imagePullSecrets: []
 
-  dataDir: /pico
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ''
