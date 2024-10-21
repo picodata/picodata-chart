@@ -8,6 +8,7 @@
   — [Задание портов для сервисов](#задание-портов-для-сервисов)
   — [Задание портов для сервисов](#задание-портов-для-сервисов)
   — [Определение конфигурации тиров](#определение-конфигурации-тиров)
+  — [Определение конфигурации плагинов](#определение-конфигурации-плагинов)  
 - [s3 Integration](#s3-integration)
 
 
@@ -180,6 +181,11 @@ fullnameOverride: ''
         protocol: TCP
         port: 5432
         targetPort: 5432
+        # Если включен плагин radix. Для общения по протоколу redis
+      - name: radix
+        protocol: TCP
+        port: 7379
+        targetPort: 7379        
 ```
 
 #### Определение конфигурации тиров
@@ -307,6 +313,46 @@ fullnameOverride: ''
     #   matchLabelKeys:
     #     — router
 
+```
+
+#### Определение конфигурации плагинов
+
+Более полная документация по плагинам доступна по [адресу](https://docs.picodata.io/picodata/devel/plugins/radix/).
+
+Нужно поменять имя образа, собранного с плагином,  в разделе [image.tag](https://git.picodata.io/picodata/picodata/picodata-chart/-/blob/main/picodata/values.yaml?ref_type=heads#L4) и добавить порт в [service](https://git.picodata.io/picodata/picodata/picodata-chart/-/blob/main/picodata/values.yaml?ref_type=heads#L18)
+
+```yaml
+- name: radix
+  protocol: TCP
+  port: 7379
+  targetPort: 7379  
+```
+
+Далее подключиться к инстансу пикодаты
+
+```bash
+kubectl exec -it default-picodata-0 -n picodata -- bash
+```
+
+В контейнере подключиться к административной консоли инстанса:
+
+```bash
+picodata admin admin.sock
+```
+
+И выполнить sql комманды:
+
+```sql
+CREATE PLUGIN radix 0.2.0;
+ALTER PLUGIN radix 0.2.0 ADD SERVICE radix TO TIER default;
+ALTER PLUGIN radix MIGRATE TO 0.2.0;
+ALTER PLUGIN radix 0.2.0 ENABLE;
+```
+
+Проверить правильность установки плагина:
+
+```sql
+SELECT * FROM _pico_plugin;
 ```
 
 ### s3 Integration
