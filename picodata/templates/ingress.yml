@@ -1,26 +1,27 @@
-{{- if .Values.picodata.ingress.enabled -}}
-{{- $svcPort := include "picodata.httpTargetPort" . -}}
+{{- range $tier, $tier_map :=  $.Values.picodata.tiers }}
+{{- if $tier_map.ingress.enabled -}}
+{{- $svcPort := include "picodata.httpTargetPort" $ -}}
 
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: {{ include "picodata.fullname" . }}-ext-ingress
-  namespace: {{ .Release.Namespace | default "default" }}
+  name: {{ $tier_map.tierName }}-{{ include "picodata.fullname" $ }}
+  namespace: {{ $.Release.Namespace | default "default" }}
   labels:
-    app.kubernetes.io/name: {{ include "picodata.fullname" . }}-ext-ingress
-    app.kubernetes.io/cluster: {{ .Release.Name }}
-    app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
-  {{- with .Values.picodata.ingress.annotations }}
+    app.kubernetes.io/name: {{ $tier_map.tierName }}-{{ include "picodata.fullname" $ }}
+    app.kubernetes.io/cluster: {{ $.Values.clusterId }}
+    app.kubernetes.io/version: {{ $.Chart.AppVersion | quote }}
+    app.kubernetes.io/managed-by: {{ $.Release.Service }}
+  {{- with $tier_map.ingress.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
   {{- end }}
 spec:
-  ingressClassName: {{ .Values.picodata.ingress.className }}
-  {{- if .Values.picodata.ingress.tls }}
+  ingressClassName: {{ $tier_map.ingress.className }}
+  {{- if $tier_map.ingress.tls }}
   tls:
-    {{- range .Values.picodata.ingress.tls }}
+    {{- range $tier_map.ingress.tls }}
     - hosts:
         {{- range .hosts }}
         - {{ . | quote }}
@@ -29,7 +30,7 @@ spec:
     {{- end }}
   {{- end }}
   rules:
-    {{- range .Values.picodata.ingress.hosts }}
+    {{- range $tier_map.ingress.hosts }}
     - host: {{ .host | quote }}
       http:
         paths:
@@ -38,9 +39,10 @@ spec:
             pathType: {{ .pathType }}
             backend:
               service:
-                name: {{ include "picodata.fullname" $ }}-interconnect
+                name: {{ $tier_map.tierName }}-{{ include "picodata.fullname" $ }}-ext
                 port:
                   number: {{ $svcPort }}
               {{- end }}
           {{- end }}
     {{- end }}
+{{- end }}

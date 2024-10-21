@@ -1,22 +1,26 @@
 1. Get the application URL by running these commands:
-{{- if .Values.picodata.ingress.enabled  }}
-{{- range $host := .Values.picodata.ingress.hosts }}
+{{- range $tier, $tier_map :=  $.Values.picodata.tiers }}
+{{- if $tier_map.ingress.enabled -}}
+{{- range $host := $tier_map.ingress.hosts }}
   {{- range .paths }}
-  http{{ if $.Values.picodata.ingress.tls }}s{{ end }}://{{ $host.host }}{{ .path }}
+  http{{ if $tier_map.ingress.tls }}s{{ end }}://{{ $host.host }}{{ .path }}
   {{- end }}
 {{- end }}
-{{- else if contains "NodePort" .Values.picodata.service.type }}
+{{- else if contains "NodePort" $.Values.picodata.service.type }}
   export NODE_PORT=$(kubectl get --namespace {{ .Release.Namespace }} -o jsonpath="{.spec.ports[0].nodePort}" services {{ include "picodata.fullname" . }})
   export NODE_IP=$(kubectl get nodes --namespace {{ .Release.Namespace }} -o jsonpath="{.items[0].status.addresses[0].address}")
   echo http://$NODE_IP:$NODE_PORT
-{{- else if contains "LoadBalancer" .Values.picodata.service.type }}
+{{- else if contains "LoadBalancer" $.Values.picodata.service.type }}
      NOTE: It may take a few minutes for the LoadBalancer IP to be available.
            You can watch the status of by running 'kubectl get --namespace {{ .Release.Namespace }} svc -w {{ include "picodata.fullname" . }}'
   export SERVICE_IP=$(kubectl get svc --namespace {{ .Release.Namespace }} {{ include "picodata.fullname" . }} --template "{{"{{ range (index .status.loadBalancer.ingress 0) }}{{.}}{{ end }}"}}")
   echo http://$SERVICE_IP:{{ .Values.picodata.service.port }}
-{{- else if contains "ClusterIP" .Values.picodata.service.type }}
-  export POD_NAME=$(kubectl get pods --namespace {{ .Release.Namespace }} -l "app.kubernetes.io/name={{ include "picodata.name" . }},app.kubernetes.io/instance={{ .Release.Name }}" -o jsonpath="{.items[0].metadata.name}")
-  export CONTAINER_PORT=$(kubectl get pod --namespace {{ .Release.Namespace }} $POD_NAME -o jsonpath="{.spec.containers[0].ports[0].containerPort}")
-  echo "Visit http://127.0.0.1:8080 to use your application"
-  kubectl --namespace {{ .Release.Namespace }} port-forward $POD_NAME 8080:$CONTAINER_PORT
+{{- else if contains "ClusterIP" $.Values.picodata.service.type }}
+  export POD_NAME=$(kubectl get pods --namespace {{ $.Release.Namespace }} -l "app.kubernetes.io/name={{ $tier_map.tierName }}-{{ include "picodata.name" $ }}" -o jsonpath="{.items[0].metadata.name}")
+  export BINARY_PORT=$(kubectl get pod --namespace {{ $.Release.Namespace }} $POD_NAME -o jsonpath="{.spec.containers[0].ports[0].containerPort}") # or
+  export HTTP_PORT=$(kubectl get pod --namespace {{ $.Release.Namespace }} $POD_NAME -o jsonpath="{.spec.containers[0].ports[1].containerPort}") # or
+  export PSQL_PORT=$(kubectl get pod --namespace {{ $.Release.Namespace }} $POD_NAME -o jsonpath="{.spec.containers[0].ports[2].containerPort}")
+  echo "Visit http://127.0.0.1:$HTTP_PORT to use your application"
+  kubectl --namespace {{ $.Release.Namespace }} port-forward $POD_NAME $HTTP_PORT:$HTTP_PORT
+{{- end }}
 {{- end }}

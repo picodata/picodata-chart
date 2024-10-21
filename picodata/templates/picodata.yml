@@ -1,45 +1,50 @@
+{{- range $tier, $tier_map :=  $.Values.picodata.tiers }}
+---
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: {{ include "picodata.fullname" . }}
-  namespace: {{ .Release.Namespace | default "default" }}
+  name: {{ $tier_map.tierName }}-{{ include "picodata.fullname" $ }}
+  namespace: {{ $.Release.Namespace | default "default" }}
   labels:
-    app.kubernetes.io/name: {{ include "picodata.fullname" . }}
-    app.kubernetes.io/cluster: {{ .Release.Name }}
-    app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/name: {{ $tier_map.tierName }}-{{ include "picodata.fullname" $ }}
+    app.kubernetes.io/cluster: {{ $.Values.clusterId }}
+    app.kubernetes.io/version: {{ $.Chart.AppVersion | quote }}
+    app.kubernetes.io/managed-by: {{ $.Release.Service }}
 spec:
-  {{- if not .Values.picodata.autoscaling.enabled }}
-  replicas: {{ .Values.picodata.replicas }}
+  {{- if not $.Values.picodata.autoscaling.enabled }}
+  replicas: {{ .replicas }}
   {{- end }}
   selector:
     matchLabels:
-      app.kubernetes.io/name: {{ include "picodata.fullname" . }}
-  serviceName: {{ include "picodata.fullname" . }}-interconnect
+      app.kubernetes.io/name: {{ $tier_map.tierName }}-{{ include "picodata.fullname" $ }}
+  serviceName: {{ $tier_map.tierName }}-{{ include "picodata.fullname" $ }}-interconnect
   template:
     metadata:
-      {{- with .Values.picodata.podAnnotations }}
       annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: {{ include "picodata.httpTargetPort" $ | quote }}
+        checksum/config: {{ include (print $.Template.BasePath "/cm.yml") $ | sha256sum }}
+      {{- with $.Values.picodata.podAnnotations }}
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        app.kubernetes.io/name: {{ include "picodata.fullname" . }}
+        app.kubernetes.io/name: {{ $tier_map.tierName }}-{{ include "picodata.fullname" $ }}
     spec:
-      {{- with .Values.picodata.securityContext }}
+      {{- with $.Values.picodata.securityContext }}
       securityContext:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "picodata.serviceAccountName" . }}               
+      serviceAccountName: {{ include "picodata.serviceAccountName" $ }}
+      {{- with $.Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}        
       containers:
-        - name: {{ include "picodata.fullname" . }}
-          image: {{ .Values.image.repository }}/{{ .Values.image.tag }}
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
-          {{- with .Values.imagePullSecrets }}
-          imagePullSecrets:
-            {{- toYaml . | nindent 8 }}
-          {{- end }}
+        - name: {{ include "picodata.fullname" $ }}
+          image: {{ $.Values.image.repository }}/{{ $.Values.image.tag }}
+          imagePullPolicy: {{ $.Values.image.pullPolicy }}
           ports:
-            {{- range $i, $value := .Values.picodata.service.ports }}
+            {{- range $i, $value := $.Values.picodata.service.ports }}
             - name: {{ $value.name }}
               containerPort: {{ $value.targetPort }}
               protocol: {{ $value.protocol }}
@@ -49,8 +54,6 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: status.podIP
-            - name: POD_PORT
-              value: {{ include "picodata.binaryTargetPort" . | quote }}
             - name: INSTANCE_NAME
               valueFrom:
                 fieldRef:
@@ -59,67 +62,74 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.namespace
-            - name: PICODATA_PEER
-              value: {{ include "picodata.peerUri" . }}
             - name: PICODATA_LISTEN
-              value: $(POD_IP):{{ include "picodata.binaryTargetPort" . }}
-            - name: ADVERTISE_URI
-              value: {{ include "picodata.advertiseUri" . }}
+              value: $(INSTANCE_NAME):{{ include "picodata.binaryTargetPort" $ }}
+            - name: PICODATA_ADVERTISE
+              value: $(INSTANCE_NAME).{{ $tier_map.tierName }}-{{ include "picodata.fullname" $ }}-interconnect.{{ $.Release.Namespace }}.svc.cluster.local:{{ include "picodata.binaryTargetPort" $ }}
             - name: PICODATA_FAILURE_DOMAIN
               value: HOST=$(INSTANCE_NAME)
-            - name: PICODATA_DATA_DIR
-              value: {{ .Values.picodata.dataDir }}
-            - name: PICODATA_HTTP_LISTEN
-              value: 0.0.0.0:{{ include "picodata.httpTargetPort" . }}              
-            {{- range .Values.picodata.env }}
+            - name: PICODATA_PG_LISTEN
+              value: $(INSTANCE_NAME):{{ include "picodata.psqlTargetPort" $ }}
+            - name: PICODATA_CONFIG_FILE
+              value: {{ $.Values.picodata.dataDir }}/config.yaml
+            - name: PICODATA_ADMIN_SOCK
+              value: {{ $.Values.picodata.dataDir }}/admin.sock
+            {{- range $tier_map.env }}
             - name: {{ .name }}
               value: {{ .value | quote }}
             {{- end }}
-          {{- with .Values.picodata.startupProbe }}
+          {{- with $.Values.picodata.startupProbe }}
           startupProbe:
             {{- toYaml . | nindent 12 }}
-          {{- end }}            
-          {{- with .Values.picodata.livenessProbe }}
+          {{- end }}
+          {{- with $.Values.picodata.livenessProbe }}
           livenessProbe:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          {{- with .Values.picodata.readinessProbe }}
+          {{- with $.Values.picodata.readinessProbe }}
           readinessProbe:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          {{- with .Values.picodata.resources }}
+          {{- with $tier_map.resources }}
           resources:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          {{- if .Values.picodata.volumes }}
+          {{- if $.Values.picodata.volumes }}
           volumeMounts:
-            {{- range .Values.picodata.volumes }}
+            - name: pico-conf
+              mountPath: {{ $.Values.picodata.dataDir }}/config.yaml
+              subPath: config.yaml
+            {{- range $.Values.picodata.volumes }}
             - name: {{ .name }}
               mountPath: {{ .mountPath }}
             {{- end }}
           {{- end }}
-          dnsConfig:
-            searches:
-              - $(INSTANCE_NAME)
-      {{- with .Values.picodata.nodeSelector }}
+      {{- with $.Values.picodata.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.picodata.affinity }}
+      {{- with $tier_map.affinity }}
       affinity:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.picodata.tolerations }}
+      {{- with $.Values.picodata.tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.picodata.topologySpreadConstraints }}
+      {{- with $.Values.picodata.topologySpreadConstraints }}
       topologySpreadConstraints:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-  {{- if .Values.picodata.volumes }}
+      volumes:
+      - name: pico-conf
+        configMap:
+          name: {{ $tier_map.tierName }}-{{ include "picodata.fullname" $ }}
+          items:
+            - key: config.yaml
+              path: config.yaml
+  {{- if $.Values.picodata.volumes }}
   volumeClaimTemplates:
-    {{- range .Values.picodata.volumes }}
+    {{- range $.Values.picodata.volumes }}
     - metadata:
         name: {{ .name | default "pvc" }}
         namespace: {{ $.Release.Namespace | default "default" }}
@@ -136,6 +146,7 @@ spec:
         {{- end }}
         resources:
           requests:
-            storage: {{ .size | default "1Gi" }}
+            storage: {{ $tier_map.diskSize | default "2Gi" }}
     {{- end }}
   {{- end }}
+{{- end }}
