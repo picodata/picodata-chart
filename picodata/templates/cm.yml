@@ -8,7 +8,7 @@ metadata:
 data:
   config.yaml: |
       cluster:
-        cluster_id: {{ $.Values.clusterId }} 
+        name: {{ $.Values.clusterName }} 
         tier:
           {{ $tier_map.tierName }}:
             replication_factor: {{ $tier_map.replicationFactor }}
@@ -16,9 +16,6 @@ data:
         default_replication_factor: 1 
       instance:
         data_dir: {{ $.Values.picodata.dataDir }}
-        service_password_file: null
-        instance_id: null
-        replicaset_id: null
         tier: {{ $tier_map.tierName }}
         peer: 
         - {{ $tier_map.tierName }}-{{ include "picodata.fullname" $ }}-0.{{ $tier_map.tierName }}-{{ include "picodata.fullname" $ }}-interconnect.{{ $.Release.Namespace }}.svc.cluster.local:{{ include "picodata.binaryTargetPort" $ }}
