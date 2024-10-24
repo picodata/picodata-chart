@@ -3,7 +3,7 @@ image:
   pullPolicy: IfNotPresent
   tag: 'picodata:master'
 
-clusterId: picokube
+clusterName: picokube
 
 picodata:
 
