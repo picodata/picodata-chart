@@ -8,22 +8,22 @@ metadata:
 data:
   config.yaml: |
       cluster:
-        name: {{ $.Values.clusterName }} 
+        name: {{ $.Values.clusterName }}
         tier:
           {{ $tier_map.tierName }}:
             replication_factor: {{ $tier_map.replicationFactor }}
             can_vote: {{ $tier_map.canVote }}
-        default_replication_factor: 1 
+        default_replication_factor: 1
       instance:
         data_dir: {{ $.Values.picodata.dataDir }}
         tier: {{ $tier_map.tierName }}
-        peer: 
+        peer:
         - {{ $tier_map.tierName }}-{{ include "picodata.fullname" $ }}-0.{{ $tier_map.tierName }}-{{ include "picodata.fullname" $ }}-interconnect.{{ $.Release.Namespace }}.svc.cluster.local:{{ include "picodata.binaryTargetPort" $ }}
         http_listen: 0.0.0.0:{{ include "picodata.httpTargetPort" $ }}
-        admin_socket: {{ $.Values.picodata.dataDir }}/admin.sock 
+        admin_socket: {{ $.Values.picodata.dataDir }}/admin.sock
         plugin_dir: /var/lib/plugins
         audit: {{ $tier_map.audit | default "null" }}
-        shredding: {{ $tier_map.shredding }} 
+        shredding: {{ $tier_map.shredding }}
         log:
           level: {{ $tier_map.log.level }}
           destination: {{ $tier_map.log.destination }}
@@ -39,5 +39,5 @@ data:
           max_concurrent_messages: {{ $tier_map.iproto.max_concurrent_messages }}
         pg:
           listen: {{ $tier_map.pg.listen | default "null" }}
-          ssl: {{ $tier_map.pg.ssl }} 
-      {{- end }}    
+          ssl: {{ $tier_map.pg.ssl }}
+      {{- end }}

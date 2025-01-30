@@ -8,16 +8,16 @@
   — [Задание портов для сервисов](#задание-портов-для-сервисов)
   — [Задание портов для сервисов](#задание-портов-для-сервисов)
   — [Определение конфигурации тиров](#определение-конфигурации-тиров)
-  — [Определение конфигурации плагинов](#определение-конфигурации-плагинов)  
+  — [Определение конфигурации плагинов](#определение-конфигурации-плагинов)
 - [s3 Integration](#s3-integration)
 
 
-Одним из самых распространенных способов управлять установкой приложений в 
+Одним из самых распространенных способов управлять установкой приложений в
 `kubernetes` является пакетный менеджер `helm`. Он позволяет шаблонизировать
 манифесты, динамичестки конфигурировать приложение, разделять релизы и
 управлять порядком установки в кластер.
-Чарт `picodata` позволяет установить `picodata` в кластер `kubernetes` 
-одной командой, а также гибко конфигурировать кластер с помощью 
+Чарт `picodata` позволяет установить `picodata` в кластер `kubernetes`
+одной командой, а также гибко конфигурировать кластер с помощью
 переопределения `chart values` в едином файле.
 
 ---
@@ -81,16 +81,16 @@ helm upgrade my-release-name picodata \
   файловой системе, или путем в репозитории).
 - `--install` — установить чарт если еще не установлен.
 - `--namespace my-namespace` — установить релиз в неймспейс my-namespace.
-- `--create-namespace` — создать неймспейс, указанный в опции `--namespace`, 
+- `--create-namespace` — создать неймспейс, указанный в опции `--namespace`,
 если он еще не создан.
 - `--values my-values.yml` — пусть к values, которые перезапишут дефолтные.
-- `--version 0.0.1` — версия устанавливаемого чарта (версия приложения 
+- `--version 0.0.1` — версия устанавливаемого чарта (версия приложения
 захардкожена в конкретной версии чарта).
 - `--devel` — позволяет устанавливать develop-версии чартов, например 0
 .0.1-alpha, или 22.10-beta-test.
-- `--debug` — вывести подробную информацию об установке и отрендеренные 
+- `--debug` — вывести подробную информацию об установке и отрендеренные
 манифесты.
-- `--wait` — дождаться пока все поды будут запланированы планировщиком и 
+- `--wait` — дождаться пока все поды будут запланированы планировщиком и
 перейдут в статус Running.
 - `--atomic` — атомарная установка. Если установка новой ревизий прошла
 неуспешно (поды не перешли в состояние Running), то откатить на
@@ -120,7 +120,7 @@ image:
   # или переданный в опции --version
   tag: 'picodata:master'
 
-# Если кластер kubernetes находится в закрытом контуре и используется 
+# Если кластер kubernetes находится в закрытом контуре и используется
 # приватный репозиторий, то необходимо заранее создать imagePullSecrets
 imagePullSecrets: []
 ```
@@ -154,7 +154,7 @@ fullnameOverride: ''
     - name: picodata
       accessModes:
         - ReadWriteOnce
-      # Точка монтирования рабочей директории инстанса.  
+      # Точка монтирования рабочей директории инстанса.
       mountPath: /pico
       # Управление классамом хранилища
       storageClassName: yc-network-ssd
@@ -185,7 +185,7 @@ fullnameOverride: ''
       - name: radix
         protocol: TCP
         port: 7379
-        targetPort: 7379        
+        targetPort: 7379
 ```
 
 #### Определение конфигурации тиров
@@ -202,7 +202,7 @@ fullnameOverride: ''
       can_vote: true
       # Размер диска для каждого инстанса
       diskSize: 1Gi
-      plugin_dir: null 
+      plugin_dir: null
       audit: null
       # Режим безопасного удаления рабочих файлов инстанса путем многократной перезаписи специальными битовыми последовательностями
       shredding: false
@@ -221,15 +221,15 @@ fullnameOverride: ''
       iproto:
         # Максимальное количество сообщений, которое Picodata обрабатывает параллельно.
         max_concurrent_messages: 76
-      # Модуль Pgproto реализует протокол PostgreSQL  
+      # Модуль Pgproto реализует протокол PostgreSQL
       pg:
         # Признак использования протокола SSL при подключении к Pgproto.
         ssl: false
       log:
-        level: info 
-        destination: null 
+        level: info
+        destination: null
         format: plain
-      # Значения по-умолчанию для cpu/mem ресурсов.  
+      # Значения по-умолчанию для cpu/mem ресурсов.
       resources:
         limits:
           cpu: 200m
@@ -267,7 +267,7 @@ fullnameOverride: ''
           - secretName: picodata-local-tls
             hosts:
               - picodata.local
-  
+
 
   # livenessProbe/readinessProbe для кластера Picodata
   livenessProbe:
@@ -276,14 +276,14 @@ fullnameOverride: ''
     timeoutSeconds: 3
     periodSeconds: 20
     successThreshold: 1
-    failureThreshold: 3      
+    failureThreshold: 3
   readinessProbe:
     tcpSocket:
       port: binary
     timeoutSeconds: 3
     periodSeconds: 20
     successThreshold: 1
-    failureThreshold: 3 
+    failureThreshold: 3
   startupProbe:
     tcpSocket:
       port: binary
@@ -295,7 +295,7 @@ fullnameOverride: ''
   autoscaling:
     # По умолчанию автомасштабирование отключено
     enabled: false
-    # Минимальное количество реплик (нужно конфигурировать совместно с 
+    # Минимальное количество реплик (нужно конфигурировать совместно с
     # replicationFactor и replicasCount)
     minReplicas: 2
     maxReplicas: 100
@@ -325,7 +325,7 @@ fullnameOverride: ''
 - name: radix
   protocol: TCP
   port: 7379
-  targetPort: 7379  
+  targetPort: 7379
 ```
 
 Далее подключиться к инстансу пикодаты

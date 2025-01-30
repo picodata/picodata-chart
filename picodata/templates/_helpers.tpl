@@ -110,4 +110,3 @@ Generate uri.
 {{- define "picodata.advertiseUri" -}}
 $(INSTANCE_NAME).{{ include "picodata.fullname" . }}-interconnect.{{ .Release.Namespace | default "default" }}.svc.cluster.local:{{ include "picodata.binaryTargetPort" . }}
 {{- end -}}
-

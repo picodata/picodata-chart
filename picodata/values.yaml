@@ -37,11 +37,11 @@ picodata:
       replicas: 2
       canVote: true
       diskSize: 1Gi
-      audit: null 
+      audit: null
       shredding: false
       memtx:
-        memory: 128M 
-        checkpoint_count: 2 
+        memory: 128M
+        checkpoint_count: 2
         checkpoint_interval: 3600.0
       vinyl:
         memory: 64M
@@ -51,7 +51,7 @@ picodata:
       pg:
         ssl: false
       log:
-        level: info 
+        level: info
         destination: null
         format: plain
       resources:
@@ -90,21 +90,21 @@ picodata:
     timeoutSeconds: 3
     periodSeconds: 20
     successThreshold: 1
-    failureThreshold: 3      
+    failureThreshold: 3
   readinessProbe:
     tcpSocket:
       port: binary
     timeoutSeconds: 3
     periodSeconds: 20
     successThreshold: 1
-    failureThreshold: 3 
+    failureThreshold: 3
   startupProbe:
     tcpSocket:
       port: binary
     periodSeconds: 30
     failureThreshold: 20
     timeoutSeconds: 3
-    
+
   nodeSelector: {}
 
   tolerations: []
