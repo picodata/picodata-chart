@@ -15,7 +15,7 @@ data:
             can_vote: {{ $tier_map.canVote }}
         default_replication_factor: 1
       instance:
-        data_dir: {{ $.Values.picodata.instanceDir }}
+        instance_dir: {{ $.Values.picodata.instanceDir }}
         tier: {{ $tier_map.tierName }}
         peer:
         - {{ $tier_map.tierName }}-{{ include "picodata.fullname" $ }}-0.{{ $tier_map.tierName }}-{{ include "picodata.fullname" $ }}-interconnect.{{ $.Release.Namespace }}.svc.cluster.local:{{ include "picodata.binaryTargetPort" $ }}
