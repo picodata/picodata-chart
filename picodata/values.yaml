@@ -13,7 +13,7 @@ picodata:
       accessModes:
         - ReadWriteOnce
       mountPath: /var/lib/picodata
-      storageClassName: yc-network-ssd
+      # storageClassName: yc-network-ssd
 
   service:
     type: ClusterIP
