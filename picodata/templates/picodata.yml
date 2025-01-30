@@ -71,9 +71,9 @@ spec:
             - name: PICODATA_PG_LISTEN
               value: $(INSTANCE_NAME):{{ include "picodata.psqlTargetPort" $ }}
             - name: PICODATA_CONFIG_FILE
-              value: {{ $.Values.picodata.dataDir }}/config.yaml
+              value: {{ $.Values.picodata.instanceDir }}/config.yaml
             - name: PICODATA_ADMIN_SOCK
-              value: {{ $.Values.picodata.dataDir }}/admin.sock
+              value: {{ $.Values.picodata.instanceDir }}/admin.sock
             {{- range $tier_map.env }}
             - name: {{ .name }}
               value: {{ .value | quote }}
@@ -97,7 +97,7 @@ spec:
           {{- if $.Values.picodata.volumes }}
           volumeMounts:
             - name: pico-conf
-              mountPath: {{ $.Values.picodata.dataDir }}/config.yaml
+              mountPath: {{ $.Values.picodata.instanceDir }}/config.yaml
               subPath: config.yaml
             {{- range $.Values.picodata.volumes }}
             - name: {{ .name }}

@@ -15,12 +15,12 @@ data:
             can_vote: {{ $tier_map.canVote }}
         default_replication_factor: 1
       instance:
-        data_dir: {{ $.Values.picodata.dataDir }}
+        data_dir: {{ $.Values.picodata.instanceDir }}
         tier: {{ $tier_map.tierName }}
         peer:
         - {{ $tier_map.tierName }}-{{ include "picodata.fullname" $ }}-0.{{ $tier_map.tierName }}-{{ include "picodata.fullname" $ }}-interconnect.{{ $.Release.Namespace }}.svc.cluster.local:{{ include "picodata.binaryTargetPort" $ }}
         http_listen: 0.0.0.0:{{ include "picodata.httpTargetPort" $ }}
-        admin_socket: {{ $.Values.picodata.dataDir }}/admin.sock
+        admin_socket: {{ $.Values.picodata.instanceDir }}/admin.sock
         plugin_dir: /var/lib/plugins
         audit: {{ $tier_map.audit | default "null" }}
         shredding: {{ $tier_map.shredding }}

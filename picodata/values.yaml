@@ -7,7 +7,7 @@ clusterName: picokube
 
 picodata:
 
-  dataDir: /var/lib/picodata
+  instanceDir: /var/lib/picodata
   volumes:
     - name: picodata
       accessModes:

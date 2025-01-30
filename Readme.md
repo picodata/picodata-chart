@@ -149,7 +149,7 @@ fullnameOverride: ''
 
 ```yaml
   # Рабочая директория инстанса.
-  dataDir: /pico
+  instanceDir: /pico
   volumes:
     - name: picodata
       accessModes:
