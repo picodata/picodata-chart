@@ -30,13 +30,9 @@ data:
           format: {{ $tier_map.log.format }}
         memtx:
           memory: {{ $tier_map.memtx.memory }}
-          checkpoint_count: {{ $tier_map.memtx.checkpoint_count }}
-          checkpoint_interval: {{ $tier_map.memtx.checkpoint_interval }}
         vinyl:
           memory: {{ $tier_map.vinyl.memory }}
           cache: {{ $tier_map.vinyl.cache }}
-        iproto:
-          max_concurrent_messages: {{ $tier_map.iproto.max_concurrent_messages }}
         pg:
           listen: {{ $tier_map.pg.listen | default "null" }}
           ssl: {{ $tier_map.pg.ssl }}

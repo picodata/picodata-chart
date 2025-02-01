@@ -41,13 +41,9 @@ picodata:
       shredding: false
       memtx:
         memory: 128M
-        checkpoint_count: 2
-        checkpoint_interval: 3600.0
       vinyl:
         memory: 64M
         cache: 32M
-      iproto:
-        max_concurrent_messages: 76
       pg:
         ssl: false
       log:
