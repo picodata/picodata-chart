@@ -28,7 +28,7 @@
 или `minikube`, а затем установить чарт. Для начала клонируем репозиторий:
 
 ```shell
-git clone https://git.picodata.io/picodata/picodata/picodata-chart.git
+git clone https://git.picodata.io/core/picodata-chart.git
 ```
 
 Переходим в директорию с чартом:
@@ -110,7 +110,7 @@ helm show values >> my-new-values.yml
 В полученном файле `my-release-values.yml` есть следующие параметры, которые можно переопределить.
 
 - Параметры образа, а также репозиторий, откуда будет получен образ `picodata`
-- Образ собирается из на осонове rockylinux:8 из [Dockerfile](https://git.picodata.io/picodata/picodata/picodata/-/blob/master/helm/picodata.Dockerfile)
+- Образ собирается из на осонове rockylinux:8 из [Dockerfile](https://git.picodata.io/core/picodata/-/blob/master/docker/picodata.Dockerfile)
 
 ```yaml
 image:
@@ -312,7 +312,7 @@ fullnameOverride: ''
 
 Более полная документация по плагинам доступна по [адресу](https://docs.picodata.io/picodata/devel/plugins/radix/).
 
-Нужно поменять имя образа, собранного с плагином,  в разделе [image.tag](https://git.picodata.io/picodata/picodata/picodata-chart/-/blob/main/picodata/values.yaml?ref_type=heads#L4) и добавить порт в [service](https://git.picodata.io/picodata/picodata/picodata-chart/-/blob/main/picodata/values.yaml?ref_type=heads#L18)
+Нужно поменять имя образа, собранного с плагином,  в разделе [image.tag](https://git.picodata.io/core/picodata-chart/-/blob/main/picodata/values.yaml?ref_type=heads#L4) и добавить порт в [service](https://git.picodata.io/core/picodata-chart/-/blob/main/picodata/values.yaml?ref_type=heads#L18)
 
 ```yaml
 - name: radix
