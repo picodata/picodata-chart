@@ -19,7 +19,7 @@ data:
         tier: {{ $tier_map.tierName }}
         peer:
         - {{ $tier_map.tierName }}-{{ include "picodata.fullname" $ }}-0.{{ $tier_map.tierName }}-{{ include "picodata.fullname" $ }}-interconnect.{{ $.Release.Namespace }}.svc.cluster.local:{{ include "picodata.binaryTargetPort" $ }}
-        http_listen: 0.0.0.0:{{ include "picodata.httpTargetPort" $ }}
+        http_listen: :{{ include "picodata.httpTargetPort" $ }}
         admin_socket: {{ $.Values.picodata.instanceDir }}/admin.sock
         plugin_dir: /var/lib/plugins
         audit: {{ $tier_map.audit | default "null" }}
@@ -34,6 +34,6 @@ data:
           memory: {{ $tier_map.vinyl.memory }}
           cache: {{ $tier_map.vinyl.cache }}
         pg:
-          listen: {{ $tier_map.pg.listen | default "null" }}
+          listen: :{{ include "picodata.psqlTargetPort" $ }}
           ssl: {{ $tier_map.pg.ssl }}
       {{- end }}

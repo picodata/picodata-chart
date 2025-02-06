@@ -68,8 +68,6 @@ spec:
               value: $(INSTANCE_NAME).{{ $tier_map.tierName }}-{{ include "picodata.fullname" $ }}-interconnect.{{ $.Release.Namespace }}.svc.cluster.local:{{ include "picodata.binaryTargetPort" $ }}
             - name: PICODATA_FAILURE_DOMAIN
               value: HOST=$(INSTANCE_NAME)
-            - name: PICODATA_PG_LISTEN
-              value: $(INSTANCE_NAME):{{ include "picodata.psqlTargetPort" $ }}
             - name: PICODATA_CONFIG_FILE
               value: {{ $.Values.picodata.instanceDir }}/config.yaml
             - name: PICODATA_ADMIN_SOCK

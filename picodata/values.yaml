@@ -61,6 +61,8 @@ picodata:
       env:
         - name: PICODATA_LOG_LEVEL
           value: info
+        - name: PICODATA_ADMIN_PASSWORD
+          value: T0psecret
 
       affinity: {}
 
