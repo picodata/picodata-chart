@@ -45,6 +45,7 @@ picodata:
         memory: 64M
         cache: 32M
       pg:
+        expose: false
         ssl: false
       log:
         level: info

@@ -9,6 +9,7 @@
   — [Задание портов для сервисов](#задание-портов-для-сервисов)
   — [Определение конфигурации тиров](#определение-конфигурации-тиров)
   — [Определение конфигурации плагинов](#определение-конфигурации-плагинов)
+- [Проброс порта psql через ingress-nginx](#проброс-порта-psql-через-ingress-nginx)
 - [s3 Integration](#s3-integration)
 
 
@@ -347,6 +348,25 @@ ALTER PLUGIN radix 0.2.0 ENABLE;
 ```sql
 SELECT * FROM _pico_plugin;
 ```
+
+### Проброс порта psql через ingress-nginx
+
+Официальныя [документация](https://kubernetes.github.io/ingress-nginx/user-guide/exposing-tcp-udp-services/)
+
+Если использовать официальный helm chart [ingress-nginx](https://github.com/kubernetes/ingress-nginx), то достаточно добавить строки в values.yaml:
+
+```yaml
+tcp:
+  "5432": "picodata/default-picodata-ext:5432"
+```
+
+и если load balancer в облаке YC, то еще указать префикс
+
+```yaml
+portNamePrefix: "psql"
+```
+
+А также в values.yaml данного чарта устрановить переменную `pg.expose` в `true`
 
 ### s3 Integration
 

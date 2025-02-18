@@ -34,6 +34,10 @@ data:
           memory: {{ $tier_map.vinyl.memory }}
           cache: {{ $tier_map.vinyl.cache }}
         pg:
+    {{- if $tier_map.pg.expose }}
+          listen: 0.0.0.0:{{ include "picodata.psqlTargetPort" $ }}
+    {{- else }}
           listen: :{{ include "picodata.psqlTargetPort" $ }}
+    {{- end }}
           ssl: {{ $tier_map.pg.ssl }}
       {{- end }}
