@@ -13,7 +13,9 @@ data:
           {{ $tier_map.tierName }}:
             replication_factor: {{ $tier_map.replicationFactor }}
             can_vote: {{ $tier_map.canVote }}
-        default_replication_factor: 1
+        default_replication_factor: {{ $.Values.picodata.default_replication_factor }}
+        default_bucket_count: {{ $.Values.picodata.default_bucket_count }}
+        shredding: {{ $.Values.picodata.shredding }}
       instance:
         instance_dir: {{ $.Values.picodata.instanceDir }}
         tier: {{ $tier_map.tierName }}
@@ -23,7 +25,6 @@ data:
         admin_socket: {{ $.Values.picodata.instanceDir }}/admin.sock
         plugin_dir: /var/lib/plugins
         audit: {{ $tier_map.audit | default "null" }}
-        shredding: {{ $tier_map.shredding }}
         log:
           level: {{ $tier_map.log.level }}
           destination: {{ $tier_map.log.destination }}

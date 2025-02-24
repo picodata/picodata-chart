@@ -31,6 +31,10 @@ picodata:
         port: 5432
         targetPort: 5432
 
+  default_replication_factor: 1
+  default_bucket_count: 3000
+  shredding: false
+
   tiers:
     - tierName: default
       replicationFactor: 1
@@ -38,7 +42,6 @@ picodata:
       canVote: true
       diskSize: 1Gi
       audit: null
-      shredding: false
       memtx:
         memory: 128M
       vinyl:
