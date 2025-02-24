@@ -6,18 +6,19 @@
 - [Переопределение параметров и запуск своего кластера](#переопределение-параметров-и-запуск-своего-кластера)
   — [Параметры дисковой подсистемы для кластера](#параметры-дисковой-подсистемы-для-кластера)
   — [Задание портов для сервисов](#задание-портов-для-сервисов)
-  — [Задание портов для сервисов](#задание-портов-для-сервисов)
+  — [Общие параметры для кластера](#общие-параметры-для-кластера)
   — [Определение конфигурации тиров](#определение-конфигурации-тиров)
-  — [Определение конфигурации плагинов](#определение-конфигурации-плагинов)  
+  — [Определение конфигурации плагинов](#определение-конфигурации-плагинов)
+- [Проброс порта psql через ingress-nginx](#проброс-порта-psql-через-ingress-nginx)
 - [s3 Integration](#s3-integration)
 
 
-Одним из самых распространенных способов управлять установкой приложений в 
+Одним из самых распространенных способов управлять установкой приложений в
 `kubernetes` является пакетный менеджер `helm`. Он позволяет шаблонизировать
 манифесты, динамичестки конфигурировать приложение, разделять релизы и
 управлять порядком установки в кластер.
-Чарт `picodata` позволяет установить `picodata` в кластер `kubernetes` 
-одной командой, а также гибко конфигурировать кластер с помощью 
+Чарт `picodata` позволяет установить `picodata` в кластер `kubernetes`
+одной командой, а также гибко конфигурировать кластер с помощью
 переопределения `chart values` в едином файле.
 
 ---
@@ -28,7 +29,7 @@
 или `minikube`, а затем установить чарт. Для начала клонируем репозиторий:
 
 ```shell
-git clone https://git.picodata.io/picodata/picodata/picodata-chart.git
+git clone https://git.picodata.io/core/picodata-chart.git
 ```
 
 Переходим в директорию с чартом:
@@ -81,16 +82,16 @@ helm upgrade my-release-name picodata \
   файловой системе, или путем в репозитории).
 - `--install` — установить чарт если еще не установлен.
 - `--namespace my-namespace` — установить релиз в неймспейс my-namespace.
-- `--create-namespace` — создать неймспейс, указанный в опции `--namespace`, 
+- `--create-namespace` — создать неймспейс, указанный в опции `--namespace`,
 если он еще не создан.
 - `--values my-values.yml` — пусть к values, которые перезапишут дефолтные.
-- `--version 0.0.1` — версия устанавливаемого чарта (версия приложения 
+- `--version 0.0.1` — версия устанавливаемого чарта (версия приложения
 захардкожена в конкретной версии чарта).
 - `--devel` — позволяет устанавливать develop-версии чартов, например 0
 .0.1-alpha, или 22.10-beta-test.
-- `--debug` — вывести подробную информацию об установке и отрендеренные 
+- `--debug` — вывести подробную информацию об установке и отрендеренные
 манифесты.
-- `--wait` — дождаться пока все поды будут запланированы планировщиком и 
+- `--wait` — дождаться пока все поды будут запланированы планировщиком и
 перейдут в статус Running.
 - `--atomic` — атомарная установка. Если установка новой ревизий прошла
 неуспешно (поды не перешли в состояние Running), то откатить на
@@ -110,7 +111,7 @@ helm show values >> my-new-values.yml
 В полученном файле `my-release-values.yml` есть следующие параметры, которые можно переопределить.
 
 - Параметры образа, а также репозиторий, откуда будет получен образ `picodata`
-- Образ собирается из на осонове rockylinux:8 из [Dockerfile](https://git.picodata.io/picodata/picodata/picodata/-/blob/master/helm/picodata.Dockerfile)
+- Образ собирается из на осонове rockylinux:8 из [Dockerfile](https://git.picodata.io/core/picodata/-/blob/master/docker/picodata.Dockerfile)
 
 ```yaml
 image:
@@ -120,7 +121,7 @@ image:
   # или переданный в опции --version
   tag: 'picodata:master'
 
-# Если кластер kubernetes находится в закрытом контуре и используется 
+# Если кластер kubernetes находится в закрытом контуре и используется
 # приватный репозиторий, то необходимо заранее создать imagePullSecrets
 imagePullSecrets: []
 ```
@@ -149,12 +150,12 @@ fullnameOverride: ''
 
 ```yaml
   # Рабочая директория инстанса.
-  dataDir: /pico
+  instanceDir: /pico
   volumes:
     - name: picodata
       accessModes:
         - ReadWriteOnce
-      # Точка монтирования рабочей директории инстанса.  
+      # Точка монтирования рабочей директории инстанса.
       mountPath: /pico
       # Управление классамом хранилища
       storageClassName: yc-network-ssd
@@ -185,7 +186,18 @@ fullnameOverride: ''
       - name: radix
         protocol: TCP
         port: 7379
-        targetPort: 7379        
+        targetPort: 7379
+```
+
+#### Общие параметры для кластера
+
+```yaml
+  # Число реплик — инстансов с одинаковым набором хранимых данных — для каждого репликасета.
+  default_replication_factor: 1
+  # Число сегментов в кластере по умолчанию.
+  default_bucket_count: 3000
+  # Режим безопасного удаления рабочих файлов путем многократной перезаписи специальными битовыми последовательностями
+  shredding: false
 ```
 
 #### Определение конфигурации тиров
@@ -202,34 +214,25 @@ fullnameOverride: ''
       can_vote: true
       # Размер диска для каждого инстанса
       diskSize: 1Gi
-      plugin_dir: null 
+      plugin_dir: null
       audit: null
-      # Режим безопасного удаления рабочих файлов инстанса путем многократной перезаписи специальными битовыми последовательностями
-      shredding: false
       memtx:
         # Объем памяти в байтах, выделяемый для хранения кортежей
         memory: 128M
-        # Максимальное количество снапшотов, хранящихся в директории memtx_dir
-        checkpoint_count: 2
-        # Период активности службы создания снапшотов (checkpoint daemon) в секундах
-        checkpoint_interval: 3600.0
       vinyl:
         # Максимальное количество оперативной памяти в байтах, которое использует движок хранения vinyl.
         memory: 67108864
         # Размер кэша в байтах для движка хранения vinyl.
         cache: 33554432
-      iproto:
-        # Максимальное количество сообщений, которое Picodata обрабатывает параллельно.
-        max_concurrent_messages: 76
-      # Модуль Pgproto реализует протокол PostgreSQL  
+      # Модуль Pgproto реализует протокол PostgreSQL
       pg:
         # Признак использования протокола SSL при подключении к Pgproto.
         ssl: false
       log:
-        level: info 
-        destination: null 
+        level: info
+        destination: null
         format: plain
-      # Значения по-умолчанию для cpu/mem ресурсов.  
+      # Значения по-умолчанию для cpu/mem ресурсов.
       resources:
         limits:
           cpu: 200m
@@ -267,7 +270,7 @@ fullnameOverride: ''
           - secretName: picodata-local-tls
             hosts:
               - picodata.local
-  
+
 
   # livenessProbe/readinessProbe для кластера Picodata
   livenessProbe:
@@ -276,14 +279,14 @@ fullnameOverride: ''
     timeoutSeconds: 3
     periodSeconds: 20
     successThreshold: 1
-    failureThreshold: 3      
+    failureThreshold: 3
   readinessProbe:
     tcpSocket:
       port: binary
     timeoutSeconds: 3
     periodSeconds: 20
     successThreshold: 1
-    failureThreshold: 3 
+    failureThreshold: 3
   startupProbe:
     tcpSocket:
       port: binary
@@ -295,7 +298,7 @@ fullnameOverride: ''
   autoscaling:
     # По умолчанию автомасштабирование отключено
     enabled: false
-    # Минимальное количество реплик (нужно конфигурировать совместно с 
+    # Минимальное количество реплик (нужно конфигурировать совместно с
     # replicationFactor и replicasCount)
     minReplicas: 2
     maxReplicas: 100
@@ -319,13 +322,13 @@ fullnameOverride: ''
 
 Более полная документация по плагинам доступна по [адресу](https://docs.picodata.io/picodata/devel/plugins/radix/).
 
-Нужно поменять имя образа, собранного с плагином,  в разделе [image.tag](https://git.picodata.io/picodata/picodata/picodata-chart/-/blob/main/picodata/values.yaml?ref_type=heads#L4) и добавить порт в [service](https://git.picodata.io/picodata/picodata/picodata-chart/-/blob/main/picodata/values.yaml?ref_type=heads#L18)
+Нужно поменять имя образа, собранного с плагином,  в разделе [image.tag](https://git.picodata.io/core/picodata-chart/-/blob/main/picodata/values.yaml?ref_type=heads#L4) и добавить порт в [service](https://git.picodata.io/core/picodata-chart/-/blob/main/picodata/values.yaml?ref_type=heads#L18)
 
 ```yaml
 - name: radix
   protocol: TCP
   port: 7379
-  targetPort: 7379  
+  targetPort: 7379
 ```
 
 Далее подключиться к инстансу пикодаты
@@ -354,6 +357,25 @@ ALTER PLUGIN radix 0.2.0 ENABLE;
 ```sql
 SELECT * FROM _pico_plugin;
 ```
+
+### Проброс порта psql через ingress-nginx
+
+Официальныя [документация](https://kubernetes.github.io/ingress-nginx/user-guide/exposing-tcp-udp-services/)
+
+Если использовать официальный helm chart [ingress-nginx](https://github.com/kubernetes/ingress-nginx), то достаточно добавить строки в values.yaml:
+
+```yaml
+tcp:
+  "5432": "picodata/default-picodata-ext:5432"
+```
+
+и если load balancer в облаке YC, то еще указать префикс
+
+```yaml
+portNamePrefix: "psql"
+```
+
+А также в values.yaml данного чарта устрановить переменную `pg.expose` в `true`
 
 ### s3 Integration
 

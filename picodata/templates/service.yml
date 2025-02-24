@@ -9,7 +9,7 @@ metadata:
     app.kubernetes.io/name: {{ $tier_map.tierName }}-{{ include "picodata.fullname" $ }}-interconnect
     app.kubernetes.io/cluster: {{ $.Values.clusterName }}
     app.kubernetes.io/version: {{ $.Chart.AppVersion | quote }}
-    app.kubernetes.io/managed-by: {{ $.Release.Service }}   
+    app.kubernetes.io/managed-by: {{ $.Release.Service }}
 spec:
   type: {{ $.Values.picodata.service.type | default "ClusterIP" }}
   clusterIP: None

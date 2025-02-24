@@ -7,13 +7,13 @@ clusterName: picokube
 
 picodata:
 
-  dataDir: /var/lib/picodata
+  instanceDir: /var/lib/picodata
   volumes:
     - name: picodata
       accessModes:
         - ReadWriteOnce
       mountPath: /var/lib/picodata
-      storageClassName: yc-network-ssd
+      # storageClassName: yc-network-ssd
 
   service:
     type: ClusterIP
@@ -31,27 +31,27 @@ picodata:
         port: 5432
         targetPort: 5432
 
+  default_replication_factor: 1
+  default_bucket_count: 3000
+  shredding: false
+
   tiers:
     - tierName: default
       replicationFactor: 1
       replicas: 2
       canVote: true
       diskSize: 1Gi
-      audit: null 
-      shredding: false
+      audit: null
       memtx:
-        memory: 128M 
-        checkpoint_count: 2 
-        checkpoint_interval: 3600.0
+        memory: 128M
       vinyl:
         memory: 64M
         cache: 32M
-      iproto:
-        max_concurrent_messages: 76
       pg:
+        expose: false
         ssl: false
       log:
-        level: info 
+        level: info
         destination: null
         format: plain
       resources:
@@ -65,6 +65,8 @@ picodata:
       env:
         - name: PICODATA_LOG_LEVEL
           value: info
+        - name: PICODATA_ADMIN_PASSWORD
+          value: T0psecret
 
       affinity: {}
 
@@ -90,21 +92,21 @@ picodata:
     timeoutSeconds: 3
     periodSeconds: 20
     successThreshold: 1
-    failureThreshold: 3      
+    failureThreshold: 3
   readinessProbe:
     tcpSocket:
       port: binary
     timeoutSeconds: 3
     periodSeconds: 20
     successThreshold: 1
-    failureThreshold: 3 
+    failureThreshold: 3
   startupProbe:
     tcpSocket:
       port: binary
     periodSeconds: 30
     failureThreshold: 20
     timeoutSeconds: 3
-    
+
   nodeSelector: {}
 
   tolerations: []

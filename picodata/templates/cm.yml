@@ -8,36 +8,37 @@ metadata:
 data:
   config.yaml: |
       cluster:
-        name: {{ $.Values.clusterName }} 
+        name: {{ $.Values.clusterName }}
         tier:
           {{ $tier_map.tierName }}:
             replication_factor: {{ $tier_map.replicationFactor }}
             can_vote: {{ $tier_map.canVote }}
-        default_replication_factor: 1 
+        default_replication_factor: {{ $.Values.picodata.default_replication_factor }}
+        default_bucket_count: {{ $.Values.picodata.default_bucket_count }}
+        shredding: {{ $.Values.picodata.shredding }}
       instance:
-        data_dir: {{ $.Values.picodata.dataDir }}
+        instance_dir: {{ $.Values.picodata.instanceDir }}
         tier: {{ $tier_map.tierName }}
-        peer: 
+        peer:
         - {{ $tier_map.tierName }}-{{ include "picodata.fullname" $ }}-0.{{ $tier_map.tierName }}-{{ include "picodata.fullname" $ }}-interconnect.{{ $.Release.Namespace }}.svc.cluster.local:{{ include "picodata.binaryTargetPort" $ }}
-        http_listen: 0.0.0.0:{{ include "picodata.httpTargetPort" $ }}
-        admin_socket: {{ $.Values.picodata.dataDir }}/admin.sock 
+        http_listen: :{{ include "picodata.httpTargetPort" $ }}
+        admin_socket: {{ $.Values.picodata.instanceDir }}/admin.sock
         plugin_dir: /var/lib/plugins
         audit: {{ $tier_map.audit | default "null" }}
-        shredding: {{ $tier_map.shredding }} 
         log:
           level: {{ $tier_map.log.level }}
           destination: {{ $tier_map.log.destination }}
           format: {{ $tier_map.log.format }}
         memtx:
           memory: {{ $tier_map.memtx.memory }}
-          checkpoint_count: {{ $tier_map.memtx.checkpoint_count }}
-          checkpoint_interval: {{ $tier_map.memtx.checkpoint_interval }}
         vinyl:
           memory: {{ $tier_map.vinyl.memory }}
           cache: {{ $tier_map.vinyl.cache }}
-        iproto:
-          max_concurrent_messages: {{ $tier_map.iproto.max_concurrent_messages }}
         pg:
-          listen: {{ $tier_map.pg.listen | default "null" }}
-          ssl: {{ $tier_map.pg.ssl }} 
-      {{- end }}    
+    {{- if $tier_map.pg.expose }}
+          listen: 0.0.0.0:{{ include "picodata.psqlTargetPort" $ }}
+    {{- else }}
+          listen: :{{ include "picodata.psqlTargetPort" $ }}
+    {{- end }}
+          ssl: {{ $tier_map.pg.ssl }}
+      {{- end }}
