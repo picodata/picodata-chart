@@ -320,7 +320,7 @@ fullnameOverride: ''
 
 #### Определение конфигурации плагинов
 
-Более полная документация по плагинам доступна по [адресу](https://docs.picodata.io/picodata/devel/plugins/radix/).
+Более полная документация по плагинам доступна по [адресу](https://docs.picodata.io/picodata/stable/plugins/radix/).
 
 Нужно поменять имя образа, собранного с плагином,  в разделе [image.tag](https://git.picodata.io/core/picodata-chart/-/blob/main/picodata/values.yaml?ref_type=heads#L4) и добавить порт в [service](https://git.picodata.io/core/picodata-chart/-/blob/main/picodata/values.yaml?ref_type=heads#L18)
 
@@ -346,10 +346,32 @@ picodata admin admin.sock
 И выполнить sql комманды:
 
 ```sql
-CREATE PLUGIN radix 0.2.0;
-ALTER PLUGIN radix 0.2.0 ADD SERVICE radix TO TIER default;
-ALTER PLUGIN radix MIGRATE TO 0.2.0;
-ALTER PLUGIN radix 0.2.0 ENABLE;
+CREATE PLUGIN radix 0.5.2;
+ALTER PLUGIN radix 0.5.2 ADD SERVICE radix TO TIER default;
+ALTER PLUGIN radix 0.5.2 SET migration_context.tier_0='default';
+ALTER PLUGIN radix 0.5.2 SET migration_context.tier_1='default';
+ALTER PLUGIN radix 0.5.2 SET migration_context.tier_2='default';
+ALTER PLUGIN radix 0.5.2 SET migration_context.tier_3='default';
+ALTER PLUGIN radix 0.5.2 SET migration_context.tier_4='default';
+ALTER PLUGIN radix 0.5.2 SET migration_context.tier_5='default';
+ALTER PLUGIN radix 0.5.2 SET migration_context.tier_6='default';
+ALTER PLUGIN radix 0.5.2 SET migration_context.tier_7='default';
+ALTER PLUGIN radix 0.5.2 SET migration_context.tier_8='default';
+ALTER PLUGIN radix 0.5.2 SET migration_context.tier_9='default';
+ALTER PLUGIN radix 0.5.2 SET migration_context.tier_10='default';
+ALTER PLUGIN radix 0.5.2 SET migration_context.tier_11='default';
+ALTER PLUGIN radix 0.5.2 SET migration_context.tier_12='default';
+ALTER PLUGIN radix 0.5.2 SET migration_context.tier_13='default';
+ALTER PLUGIN radix 0.5.2 SET migration_context.tier_14='default';
+ALTER PLUGIN radix 0.5.2 SET migration_context.tier_15='default';
+ALTER PLUGIN radix MIGRATE TO 0.5.2 OPTION(TIMEOUT=300);
+ALTER PLUGIN radix 0.5.2 ENABLE OPTION(TIMEOUT=30);
+```
+
+А также установить дефолтное значение для бакета в [values.yaml](https://git.picodata.io/core/picodata-chart/-/blob/main/picodata/values.yaml#L35):
+
+```yaml
+  default_bucket_count: 16384
 ```
 
 Проверить правильность установки плагина:
