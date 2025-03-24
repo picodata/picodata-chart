@@ -115,7 +115,7 @@ helm show values >> my-new-values.yml
 
 ```yaml
 image:
-  repository: docker-public.binary.picodata.io
+  repository: docker.binary.picodata.io
   pullPolicy: IfNotPresent
   # Если убрать тег в values, то будет использован тег, указанный в chartVersion,
   # или переданный в опции --version
@@ -331,7 +331,13 @@ fullnameOverride: ''
   targetPort: 7379
 ```
 
-Далее подключиться к инстансу пикодаты
+Установить дефолтное значение для бакета в [values.yaml](https://git.picodata.io/core/picodata-chart/-/blob/main/picodata/values.yaml#L35):
+
+```yaml
+  default_bucket_count: 16384
+```
+
+После инсталляции, подключиться к инстансу пикодаты
 
 ```bash
 kubectl exec -it default-picodata-0 -n picodata -- bash
@@ -368,12 +374,6 @@ ALTER PLUGIN radix MIGRATE TO 0.5.2 OPTION(TIMEOUT=300);
 ALTER PLUGIN radix 0.5.2 ENABLE OPTION(TIMEOUT=30);
 ```
 
-А также установить дефолтное значение для бакета в [values.yaml](https://git.picodata.io/core/picodata-chart/-/blob/main/picodata/values.yaml#L35):
-
-```yaml
-  default_bucket_count: 16384
-```
-
 Проверить правильность установки плагина:
 
 ```sql
@@ -382,7 +382,7 @@ SELECT * FROM _pico_plugin;
 
 ### Проброс порта psql через ingress-nginx
 
-Официальныя [документация](https://kubernetes.github.io/ingress-nginx/user-guide/exposing-tcp-udp-services/)
+Официальная [документация](https://kubernetes.github.io/ingress-nginx/user-guide/exposing-tcp-udp-services/)
 
 Если использовать официальный helm chart [ingress-nginx](https://github.com/kubernetes/ingress-nginx), то достаточно добавить строки в values.yaml:
 
