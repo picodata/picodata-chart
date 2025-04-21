@@ -111,7 +111,7 @@ helm show values >> my-new-values.yml
 В полученном файле `my-release-values.yml` есть следующие параметры, которые можно переопределить.
 
 - Параметры образа, а также репозиторий, откуда будет получен образ `picodata`
-- Образ собирается из на осонове rockylinux:8 из [Dockerfile](https://git.picodata.io/core/picodata/-/blob/master/docker/picodata.Dockerfile)
+- Образ собирается на осонове rockylinux:8 из [Dockerfile](https://git.picodata.io/core/picodata/-/blob/master/docker/picodata.Dockerfile)
 
 ```yaml
 image:
@@ -200,6 +200,15 @@ fullnameOverride: ''
   shredding: false
 ```
 
+Можно включить переопределение системных настроек, если установить [sysctl.enabled](https://git.picodata.io/core/picodata-chart/-/blob/main/picodata/values.yaml#L38)) в `true`
+
+```yaml
+  sysctl:
+    enabled: true
+    command:
+      - sysctl -w fs.file-max=1048576
+```
+
 #### Определение конфигурации тиров
 
 ```yaml
@@ -221,9 +230,9 @@ fullnameOverride: ''
         memory: 128M
       vinyl:
         # Максимальное количество оперативной памяти в байтах, которое использует движок хранения vinyl.
-        memory: 67108864
+        memory: 64M
         # Размер кэша в байтах для движка хранения vinyl.
-        cache: 33554432
+        cache: 32M
       # Модуль Pgproto реализует протокол PostgreSQL
       pg:
         # Признак использования протокола SSL при подключении к Pgproto.
@@ -322,7 +331,7 @@ fullnameOverride: ''
 
 Более полная документация по плагинам доступна по [адресу](https://docs.picodata.io/picodata/stable/plugins/radix/).
 
-Нужно поменять имя образа, собранного с плагином,  в разделе [image.tag](https://git.picodata.io/core/picodata-chart/-/blob/main/picodata/values.yaml?ref_type=heads#L4) и добавить порт в [service](https://git.picodata.io/core/picodata-chart/-/blob/main/picodata/values.yaml?ref_type=heads#L18)
+Нужно поменять имя образа, собранного с плагином, в разделе [image.tag](https://git.picodata.io/core/picodata-chart/-/blob/main/picodata/values.yaml?ref_type=heads#L4) и добавить порт в [service](https://git.picodata.io/core/picodata-chart/-/blob/main/picodata/values.yaml?ref_type=heads#L18)
 
 ```yaml
 - name: radix
