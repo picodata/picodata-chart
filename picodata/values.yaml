@@ -35,6 +35,11 @@ picodata:
   default_bucket_count: 3000
   shredding: false
 
+  sysctl:
+    enabled: false
+    command:
+      - sysctl -w fs.file-max=1048576
+
   tiers:
     - tierName: default
       replicationFactor: 1

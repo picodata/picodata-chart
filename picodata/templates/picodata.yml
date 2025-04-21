@@ -39,6 +39,20 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      {{- if $.Values.picodata.sysctl.enabled }}
+      initContainers:
+        - name: sysctl
+          image: busybox:latest
+          imagePullPolicy: "IfNotPresent"
+          command:
+            - sh
+            - -ec
+            {{- range $value := $.Values.picodata.sysctl.command }}
+            - {{ $value }}
+            {{- end }}
+          securityContext:
+            privileged: true
+      {{- end }}
       containers:
         - name: {{ include "picodata.fullname" $ }}
           image: {{ $.Values.image.repository }}/{{ $.Values.image.tag }}
