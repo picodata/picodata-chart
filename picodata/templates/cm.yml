@@ -20,7 +20,9 @@ data:
         instance_dir: {{ $.Values.picodata.instanceDir }}
         tier: {{ $tier_map.tierName }}
         peer:
-        - {{ $tier_map.tierName }}-{{ include "picodata.fullname" $ }}-0.{{ $tier_map.tierName }}-{{ include "picodata.fullname" $ }}-interconnect.{{ $.Release.Namespace }}.svc.cluster.local:{{ include "picodata.binaryTargetPort" $ }}
+        {{- with (first $.Values.picodata.tiers) }}
+        - {{ .tierName }}-{{ include "picodata.fullname" $ }}-0.{{ .tierName }}-{{ include "picodata.fullname" $ }}-interconnect.{{ $.Release.Namespace }}.svc.cluster.local:{{ include "picodata.binaryTargetPort" $ }}
+        {{- end }}
         http_listen: 0.0.0.0:{{ include "picodata.httpTargetPort" $ }}
         admin_socket: {{ $.Values.picodata.instanceDir }}/admin.sock
         plugin_dir: /var/lib/plugins
