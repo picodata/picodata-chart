@@ -9,13 +9,15 @@ data:
   config.yaml: |
       cluster:
         name: {{ $.Values.clusterName }}
-        tier:
-          {{ $tier_map.tierName }}:
-            replication_factor: {{ $tier_map.replicationFactor }}
-            can_vote: {{ $tier_map.canVote }}
         default_replication_factor: {{ $.Values.picodata.default_replication_factor }}
         default_bucket_count: {{ $.Values.picodata.default_bucket_count }}
         shredding: {{ $.Values.picodata.shredding }}
+        tier:
+        {{- range $tier, $tier_map :=  $.Values.picodata.tiers }}
+          {{ $tier_map.tierName }}:
+            replication_factor: {{ $tier_map.replicationFactor }}
+            can_vote: {{ $tier_map.canVote }}
+        {{- end }}
       instance:
         instance_dir: {{ $.Values.picodata.instanceDir }}
         tier: {{ $tier_map.tierName }}
