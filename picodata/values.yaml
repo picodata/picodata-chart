@@ -1,7 +1,7 @@
 image:
   repository: docker.binary.picodata.io
   pullPolicy: IfNotPresent
-  tag: 'picodata:master'
+  tag: 'picodata:latest'
 
 clusterName: picokube
 
