@@ -3,4 +3,4 @@ name: picodata
 description: Helm chart for Picodata.
 
 type: application
-version: 1.0.3
+version: 1.0.4
